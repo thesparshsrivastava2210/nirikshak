@@ -1,10 +1,65 @@
-import React, { useState } from 'react';
-import { Search, Bell, Shield, Building2, Menu } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, Bell, Shield, Building2, Menu, ChevronRight, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { fetchProjects } from '../../services/api';
 
-export default function Header({ searchVal, setSearchVal, setMobileOpen = () => {} }) {
+export default function Header({ setMobileOpen = () => {} }) {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
+
+  const [query, setQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+
+  const searchContainerRef = useRef(null);
+
+  // Live autocomplete search matching against projects database
+  useEffect(() => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setShowDropdown(false);
+      return;
+    }
+
+    async function searchData() {
+      try {
+        const results = await fetchProjects({ search: query.trim() });
+        setSearchResults(results.slice(0, 6)); // Display top 6 results
+        setShowDropdown(true);
+      } catch (err) {
+        console.error('Error fetching search results:', err);
+      }
+    }
+
+    const timer = setTimeout(searchData, 150);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    setShowDropdown(false);
+    navigate(`/projects?search=${encodeURIComponent(query.trim())}`);
+  };
+
+  const handleSelectProject = (projectId) => {
+    setShowDropdown(false);
+    setQuery('');
+    navigate(`/projects/${projectId}`);
+  };
 
   const mockNotifications = [
     { id: 1, title: 'Critical Risk Alert', text: 'Project P1045 financial mismatch delta reached +44.8%.', time: '10m ago' },
@@ -13,7 +68,7 @@ export default function Header({ searchVal, setSearchVal, setMobileOpen = () => 
   ];
 
   return (
-    <header className="h-16 bg-slate-900 border-b border-slate-800 px-3 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-sm text-slate-200">
+    <header className="h-16 bg-slate-900 border-b border-slate-800 px-3 sm:px-6 flex items-center justify-between sticky top-0 z-40 shadow-sm text-slate-200">
       <div className="flex items-center gap-3">
         {/* Mobile Hamburger Toggle Button */}
         <button
@@ -24,16 +79,76 @@ export default function Header({ searchVal, setSearchVal, setMobileOpen = () => 
           <Menu className="w-5 h-5" />
         </button>
 
-        {/* Search Input */}
-        <div className="relative w-full max-w-[170px] sm:max-w-xs md:w-96">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-          <input
-            type="text"
-            placeholder="Search Project ID, Name..."
-            value={searchVal || ''}
-            onChange={(e) => setSearchVal && setSearchVal(e.target.value)}
-            className="w-full bg-slate-800/80 text-xs text-slate-200 pl-9 pr-3 py-2 rounded-md border border-slate-700/80 focus:outline-none focus:border-slate-500 placeholder-slate-400"
-          />
+        {/* Top Search Bar Container with Live Autocomplete Dropdown */}
+        <div ref={searchContainerRef} className="relative w-full max-w-[170px] sm:max-w-xs md:w-96">
+          <form onSubmit={handleFormSubmit} className="relative flex items-center">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search Project ID, Name, Location..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onFocus={() => query.trim() && setShowDropdown(true)}
+              className="w-full bg-slate-800/90 text-xs text-slate-200 pl-9 pr-8 py-2 rounded-md border border-slate-700/80 focus:outline-none focus:border-slate-400 placeholder-slate-400 font-medium"
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={() => { setQuery(''); setShowDropdown(false); }}
+                className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-200"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </form>
+
+          {/* Autocomplete Results Dropdown Panel */}
+          {showDropdown && (
+            <div className="absolute left-0 right-0 top-full mt-1.5 bg-slate-900 border border-slate-700 rounded-lg shadow-2xl z-50 overflow-hidden text-xs">
+              <div className="p-2 border-b border-slate-800 flex items-center justify-between bg-slate-950/80">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  {searchResults.length > 0 ? `Matched Projects (${searchResults.length})` : 'No Results'}
+                </span>
+                <span className="text-[9px] text-slate-500">Press Enter for full database list</span>
+              </div>
+
+              {searchResults.length > 0 ? (
+                <div className="max-h-64 overflow-y-auto divide-y divide-slate-800">
+                  {searchResults.map((proj) => (
+                    <div
+                      key={proj.project_id}
+                      onClick={() => handleSelectProject(proj.project_id)}
+                      className="p-2.5 hover:bg-slate-800 cursor-pointer transition flex items-center justify-between group"
+                    >
+                      <div className="min-w-0 pr-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-white text-xs">{proj.project_id}</span>
+                          <span className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded ${
+                            proj.risk_level === 'CRITICAL' ? 'bg-red-950 text-red-400 border border-red-800' :
+                            proj.risk_level === 'HIGH' ? 'bg-amber-950 text-amber-400 border border-amber-800' :
+                            'bg-slate-800 text-slate-300'
+                          }`}>
+                            {proj.risk_level} {proj.risk_score}
+                          </span>
+                        </div>
+                        <p className="text-[11px] font-medium text-slate-300 truncate mt-0.5 group-hover:text-white">
+                          {proj.project_name}
+                        </p>
+                        <p className="text-[10px] text-slate-400 truncate">
+                          {proj.district} • ₹{proj.sanction_amount} Lakh • {proj.physical_progress}% Progress
+                        </p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-white shrink-0" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-4 text-center text-slate-400 text-xs">
+                  No project matching "{query}"
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
