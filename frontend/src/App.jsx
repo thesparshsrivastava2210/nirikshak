@@ -30,21 +30,21 @@ export default function App() {
       )}
 
       <BrowserRouter>
-        {/* Outer Flex Wrapper set to dark navy (bg-slate-900) so sidebar background never shows white gaps */}
-        <div className="flex min-h-screen bg-slate-900 text-slate-900 font-sans overflow-x-hidden">
-          {/* Responsive Left Sidebar */}
+        {/* Fixed Viewport Height Layout Container */}
+        <div className="flex h-screen w-full bg-slate-900 text-slate-900 font-sans overflow-hidden">
+          {/* Responsive Left Sidebar (Fixed 100vh) */}
           <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
 
-          {/* Main Workspace Area (Light Slate bg-slate-50 background) */}
-          <div className="flex-1 flex flex-col min-w-0 w-full bg-slate-50 min-h-screen overflow-x-hidden">
+          {/* Main Workspace Area (Clean Workspace background, scroll constrained to main) */}
+          <div className="flex-1 flex flex-col min-w-0 h-screen bg-slate-50 overflow-hidden">
             {/* Top Header */}
             <Header searchVal={searchVal} setSearchVal={setSearchVal} setMobileOpen={setMobileOpen} />
 
             {/* Touch Horizontal Mobile Tabs Bar */}
             <MobileTabsBar />
 
-            {/* Router Page Container */}
-            <main className="flex-1 overflow-y-auto pb-12 w-full">
+            {/* Router Page Container - ONLY THIS MAIN CONTAINER SCROLLS VERTICALLY */}
+            <main className="flex-1 overflow-y-auto pb-12 w-full min-w-0">
               <Routes>
                 <Route path="/" element={<CommandCenter />} />
                 <Route path="/risk-radar" element={<RiskRadar />} />

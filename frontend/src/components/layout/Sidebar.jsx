@@ -31,9 +31,9 @@ export default function Sidebar({ mobileOpen = false, setMobileOpen = () => {} }
   ];
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-slate-900 text-slate-300">
+    <div className="flex flex-col h-full bg-slate-900 text-slate-300 overflow-hidden">
       {/* Brand Header */}
-      <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+      <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/60 shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded bg-slate-800 border border-slate-700 flex items-center justify-center text-emerald-400 font-bold text-lg shadow-sm">
             N
@@ -81,7 +81,7 @@ export default function Sidebar({ mobileOpen = false, setMobileOpen = () => {} }
       </nav>
 
       {/* Demo Account & User Profile */}
-      <div className="p-3 border-t border-slate-800 bg-slate-950/80">
+      <div className="p-3 border-t border-slate-800 bg-slate-950/80 shrink-0">
         <div className="mb-2 px-1">
           <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
             Demo Authority Scope
@@ -117,7 +117,7 @@ export default function Sidebar({ mobileOpen = false, setMobileOpen = () => {} }
 
   return (
     <>
-      {/* Desktop Sticky Sidebar */}
+      {/* Desktop Fixed Viewport Sidebar */}
       <aside className="hidden md:flex w-64 bg-slate-900 text-slate-300 flex-col h-screen sticky top-0 border-r border-slate-800 shrink-0">
         {sidebarContent}
       </aside>
