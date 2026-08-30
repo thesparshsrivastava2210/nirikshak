@@ -27,22 +27,31 @@ def init_db_if_needed():
     if _db_initialized:
         return
     
-    # Check if DB file exists and is non-empty
-    if not os.path.exists(DB_PATH) or os.path.getsize(DB_PATH) == 0:
+    try:
+        # Create all tables if missing
+        Base.metadata.create_all(bind=engine)
+        
+        # Check if source db exists and can be copied to /tmp
         source_db = os.path.join(os.path.dirname(__file__), "nirikshak.db")
-        if os.path.exists(source_db) and DB_PATH != source_db:
+        if IS_VERCEL and os.path.exists(source_db) and DB_PATH != source_db and (not os.path.exists(DB_PATH) or os.path.getsize(DB_PATH) == 0):
             try:
                 shutil.copyfile(source_db, DB_PATH)
-                _db_initialized = True
-                return
             except Exception as e:
                 print("Failed to copy source db to /tmp:", e)
-        
+
+        # Verify if database has records
+        db = SessionLocal()
         try:
-            from seed_data import seed_database
-            seed_database()
-        except Exception as e:
-            print("Failed to run seed_database:", e)
+            import models
+            count = db.query(models.Project).count()
+            if count == 0:
+                print("No project records found in database. Running automated seed...")
+                from seed_data import seed_database
+                seed_database()
+        finally:
+            db.close()
+    except Exception as e:
+        print("Error during init_db_if_needed:", e)
 
     _db_initialized = True
 
