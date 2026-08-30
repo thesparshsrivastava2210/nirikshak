@@ -49,7 +49,7 @@ export default function ReportsPage() {
   const { metrics, critical_projects, high_risk_projects } = report;
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto w-full overflow-x-hidden">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-slate-200 pb-4">
         <div>

@@ -47,86 +47,88 @@ export default function RiskRadar() {
   const lowCount = projects.filter(p => p.risk_level === 'LOW').length;
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto w-full overflow-x-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
         <div>
-          <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Risk Radar</h1>
-          <p className="text-xs text-slate-500 mt-0.5 font-medium">
+          <h1 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">Risk Radar</h1>
+          <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 font-medium">
             Spatial monitoring map and risk distribution analysis across jurisdictions
           </p>
         </div>
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm flex flex-wrap items-center gap-4 text-xs">
-        <div className="flex items-center gap-1.5 font-bold text-slate-700 uppercase tracking-wider">
+      <div className="bg-white p-3 sm:p-4 rounded-lg border border-slate-200 shadow-sm flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3 text-xs">
+        <div className="flex items-center gap-1.5 font-bold text-slate-700 uppercase tracking-wider text-[11px]">
           <SlidersHorizontal className="w-4 h-4 text-slate-500" />
           <span>Filters:</span>
         </div>
 
-        <div>
-          <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">State</label>
-          <select
-            value={selectedState}
-            onChange={(e) => setSelectedState(e.target.value)}
-            className="bg-slate-50 border border-slate-300 rounded px-2.5 py-1 text-slate-700 font-medium focus:outline-none"
-          >
-            <option value="All">All States</option>
-            <option value="Uttar Pradesh">Uttar Pradesh</option>
-            <option value="Karnataka">Karnataka</option>
-            <option value="Bihar">Bihar</option>
-          </select>
-        </div>
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2.5 w-full sm:w-auto">
+          <div>
+            <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">State</label>
+            <select
+              value={selectedState}
+              onChange={(e) => setSelectedState(e.target.value)}
+              className="bg-slate-50 border border-slate-300 rounded px-2.5 py-1 text-slate-700 font-medium focus:outline-none w-full"
+            >
+              <option value="All">All States</option>
+              <option value="Uttar Pradesh">Uttar Pradesh</option>
+              <option value="Karnataka">Karnataka</option>
+              <option value="Bihar">Bihar</option>
+            </select>
+          </div>
 
-        <div>
-          <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">District</label>
-          <select
-            value={selectedDistrict}
-            onChange={(e) => setSelectedDistrict(e.target.value)}
-            className="bg-slate-50 border border-slate-300 rounded px-2.5 py-1 text-slate-700 font-medium focus:outline-none"
-          >
-            <option value="All">All Districts</option>
-            <option value="Varanasi">Varanasi</option>
-            <option value="Lucknow">Lucknow</option>
-            <option value="Bengaluru Urban">Bengaluru Urban</option>
-            <option value="Patna">Patna</option>
-          </select>
-        </div>
+          <div>
+            <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">District</label>
+            <select
+              value={selectedDistrict}
+              onChange={(e) => setSelectedDistrict(e.target.value)}
+              className="bg-slate-50 border border-slate-300 rounded px-2.5 py-1 text-slate-700 font-medium focus:outline-none w-full"
+            >
+              <option value="All">All Districts</option>
+              <option value="Varanasi">Varanasi</option>
+              <option value="Lucknow">Lucknow</option>
+              <option value="Bengaluru Urban">Bengaluru Urban</option>
+              <option value="Patna">Patna</option>
+            </select>
+          </div>
 
-        <div>
-          <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Project Type</label>
-          <select
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-            className="bg-slate-50 border border-slate-300 rounded px-2.5 py-1 text-slate-700 font-medium focus:outline-none"
-          >
-            <option value="All">All Project Types</option>
-            <option value="Community Hall Construction">Community Hall</option>
-            <option value="Drinking Water Pipeline">Drinking Water</option>
-            <option value="Anganwadi Building">Anganwadi Building</option>
-            <option value="Solar Street Lighting">Solar Lighting</option>
-          </select>
-        </div>
+          <div>
+            <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Project Type</label>
+            <select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              className="bg-slate-50 border border-slate-300 rounded px-2.5 py-1 text-slate-700 font-medium focus:outline-none w-full"
+            >
+              <option value="All">All Project Types</option>
+              <option value="Community Hall Construction">Community Hall</option>
+              <option value="Drinking Water Pipeline">Drinking Water</option>
+              <option value="Anganwadi Building">Anganwadi Building</option>
+              <option value="Solar Street Lighting">Solar Lighting</option>
+            </select>
+          </div>
 
-        <div>
-          <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Risk Level</label>
-          <select
-            value={selectedRisk}
-            onChange={(e) => setSelectedRisk(e.target.value)}
-            className="bg-slate-50 border border-slate-300 rounded px-2.5 py-1 text-slate-700 font-semibold focus:outline-none"
-          >
-            <option value="All">All Risk Levels</option>
-            <option value="CRITICAL">Critical Risk</option>
-            <option value="HIGH">High Risk</option>
-            <option value="MEDIUM">Medium Risk</option>
-            <option value="LOW">Low Risk</option>
-          </select>
+          <div>
+            <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Risk Level</label>
+            <select
+              value={selectedRisk}
+              onChange={(e) => setSelectedRisk(e.target.value)}
+              className="bg-slate-50 border border-slate-300 rounded px-2.5 py-1 text-slate-700 font-semibold focus:outline-none w-full"
+            >
+              <option value="All">All Risk Levels</option>
+              <option value="CRITICAL">Critical Risk</option>
+              <option value="HIGH">High Risk</option>
+              <option value="MEDIUM">Medium Risk</option>
+              <option value="LOW">Low Risk</option>
+            </select>
+          </div>
         </div>
 
         <button
           onClick={() => { setSelectedState('All'); setSelectedDistrict('All'); setSelectedType('All'); setSelectedRisk('All'); }}
-          className="ml-auto text-xs text-slate-500 hover:text-slate-900 underline font-medium"
+          className="sm:ml-auto text-xs text-slate-500 hover:text-slate-900 underline font-medium"
         >
           Reset Filters
         </button>

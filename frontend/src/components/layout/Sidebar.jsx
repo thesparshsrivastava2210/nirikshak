@@ -10,13 +10,12 @@ import {
   ShieldAlert, 
   FileText, 
   Bot, 
-  UserCheck, 
-  LogOut,
-  ChevronDown
+  ChevronDown,
+  X
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-export default function Sidebar() {
+export default function Sidebar({ mobileOpen = false, setMobileOpen = () => {} }) {
   const { currentUser, switchUser, DEMO_ACCOUNTS } = useAuth();
 
   const navItems = [
@@ -31,17 +30,27 @@ export default function Sidebar() {
     { path: '/ask-nirikshak', label: 'Ask NIRIKSHAK', icon: Bot },
   ];
 
-  return (
-    <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col h-screen sticky top-0 border-r border-slate-800 shrink-0">
+  const sidebarContent = (
+    <div className="flex flex-col h-full bg-slate-900 text-slate-300">
       {/* Brand Header */}
-      <div className="p-4 border-b border-slate-800 flex items-center gap-3 bg-slate-950/60">
-        <div className="w-9 h-9 rounded bg-slate-800 border border-slate-700 flex items-center justify-center text-emerald-400 font-bold text-lg shadow-sm">
-          N
+      <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded bg-slate-800 border border-slate-700 flex items-center justify-center text-emerald-400 font-bold text-lg shadow-sm">
+            N
+          </div>
+          <div>
+            <h1 className="font-bold text-white tracking-wide text-base leading-tight">NIRIKSHAK</h1>
+            <p className="text-[10px] text-slate-400 font-medium tracking-tight">MPLADS Risk Intelligence</p>
+          </div>
         </div>
-        <div>
-          <h1 className="font-bold text-white tracking-wide text-base leading-tight">NIRIKSHAK</h1>
-          <p className="text-[10px] text-slate-400 font-medium tracking-tight">MPLADS Risk Intelligence</p>
-        </div>
+
+        {/* Mobile Close Button */}
+        <button
+          onClick={() => setMobileOpen(false)}
+          className="md:hidden p-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white"
+        >
+          <X className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Navigation Links */}
@@ -55,6 +64,7 @@ export default function Sidebar() {
             <NavLink
               key={item.path}
               to={item.path}
+              onClick={() => setMobileOpen(false)}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-md text-xs font-medium transition-all ${
                   isActive
@@ -102,6 +112,31 @@ export default function Sidebar() {
           </div>
         </div>
       </div>
-    </aside>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Desktop Sticky Sidebar */}
+      <aside className="hidden md:flex w-64 bg-slate-900 text-slate-300 flex-col h-screen sticky top-0 border-r border-slate-800 shrink-0">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile Drawer Overlay */}
+      {mobileOpen && (
+        <div className="md:hidden fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div
+            onClick={() => setMobileOpen(false)}
+            className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity"
+          />
+
+          {/* Drawer Sidebar */}
+          <div className="relative w-72 max-w-[85vw] bg-slate-900 h-full shadow-2xl z-10">
+            {sidebarContent}
+          </div>
+        </div>
+      )}
+    </>
   );
 }

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
+import MobileTabsBar from './components/layout/MobileTabsBar';
 
 import CommandCenter from './pages/CommandCenter';
 import RiskRadar from './pages/RiskRadar';
@@ -17,21 +18,25 @@ import AskNirikshak from './pages/AskNirikshak';
 
 export default function App() {
   const [searchVal, setSearchVal] = useState('');
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <AuthProvider>
       <BrowserRouter>
-        <div className="flex min-h-screen bg-slate-50 text-slate-900 font-sans">
-          {/* Persistent Left Sidebar */}
-          <Sidebar />
+        <div className="flex min-h-screen bg-slate-50 text-slate-900 font-sans overflow-x-hidden">
+          {/* Responsive Left Sidebar */}
+          <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
 
           {/* Main Workspace Area */}
-          <div className="flex-1 flex flex-col min-w-0">
-            {/* Persistent Top Header */}
-            <Header searchVal={searchVal} setSearchVal={setSearchVal} />
+          <div className="flex-1 flex flex-col min-w-0 w-full overflow-x-hidden">
+            {/* Top Header */}
+            <Header searchVal={searchVal} setSearchVal={setSearchVal} setMobileOpen={setMobileOpen} />
+
+            {/* Touch Horizontal Mobile Tabs Bar */}
+            <MobileTabsBar />
 
             {/* Router Page Container */}
-            <main className="flex-1 overflow-y-auto pb-12">
+            <main className="flex-1 overflow-y-auto pb-12 w-full">
               <Routes>
                 <Route path="/" element={<CommandCenter />} />
                 <Route path="/risk-radar" element={<RiskRadar />} />

@@ -56,12 +56,12 @@ export default function ProjectsList() {
   });
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto w-full overflow-x-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
         <div>
-          <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">MPLADS Projects Database</h1>
-          <p className="text-xs text-slate-500 mt-0.5 font-medium">
+          <h1 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">MPLADS Projects Database</h1>
+          <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 font-medium">
             Searchable project records, financial utilization, and physical progress metrics
           </p>
         </div>

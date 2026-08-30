@@ -34,7 +34,7 @@ export default function AskNirikshak() {
   };
 
   return (
-    <div className="p-6 space-y-6 max-w-5xl mx-auto">
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-5xl mx-auto w-full overflow-x-hidden">
       {/* Header */}
       <div className="border-b border-slate-200 pb-4">
         <h1 className="text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
