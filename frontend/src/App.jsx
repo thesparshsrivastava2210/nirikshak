@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import MobileTabsBar from './components/layout/MobileTabsBar';
+import StartupScreen from './components/common/StartupScreen';
 
 import CommandCenter from './pages/CommandCenter';
 import RiskRadar from './pages/RiskRadar';
@@ -19,9 +20,15 @@ import AskNirikshak from './pages/AskNirikshak';
 export default function App() {
   const [searchVal, setSearchVal] = useState('');
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [loadingStartup, setLoadingStartup] = useState(true);
 
   return (
     <AuthProvider>
+      {/* Government-Grade Startup Screen */}
+      {loadingStartup && (
+        <StartupScreen onComplete={() => setLoadingStartup(false)} />
+      )}
+
       <BrowserRouter>
         <div className="flex min-h-screen bg-slate-50 text-slate-900 font-sans overflow-x-hidden">
           {/* Responsive Left Sidebar */}
