@@ -8,6 +8,13 @@ class AssistantEngine:
     ranked tables, structured risk explanations, or scheme knowledge insights.
     """
 
+    STOP_WORDS = {
+        "tell", "me", "about", "project", "projects", "work", "works", "show", "give",
+        "details", "info", "information", "what", "is", "the", "for", "with", "and",
+        "find", "search", "list", "please", "can", "you", "view", "check", "get", "any",
+        "some", "all", "does", "have", "there"
+    }
+
     @staticmethod
     def process_query(query: str, projects: List[dict], agencies: List[dict], investigations: List[dict]) -> dict:
         q_raw = query or ""
@@ -16,6 +23,18 @@ class AssistantEngine:
         if not q_lower:
             return {
                 "answer_text": "Please enter a question or select one of the suggested queries below.",
+                "query_type": "text",
+                "suggested_followups": [
+                    "Which projects should I inspect first?",
+                    "Why is P1045 high risk?",
+                    "Show projects with high expenditure but low physical progress"
+                ]
+            }
+
+        # 0. Greetings & Assistant Role
+        if q_lower in ["hi", "hello", "hey", "help", "who are you"]:
+            return {
+                "answer_text": "Hello! I am the **NIRIKSHAK AI Assistant**. I can help you search project records, analyze financial-physical progress disparities, inspect high-risk works, check implementing agency performance, or explain risk scoring methodology. Try asking 'Which projects should I inspect first?' or 'Why is P1045 high risk?'.",
                 "query_type": "text",
                 "suggested_followups": [
                     "Which projects should I inspect first?",
@@ -92,23 +111,18 @@ class AssistantEngine:
                 ]
             }
 
-        # 3. Specific Project Query (Matching ID e.g. P1045, P2098, P3812, P3901, P4021, P5190, P5310, P6104 or title words)
-        matched_proj = None
-        # Extract project ID pattern like P1234
+        # 3. Specific Project Query (Matching Project ID pattern e.g. P1045, P2098, P3812, P3901, P4021, P5190, P5310, P6104)
         pid_match = re.search(r'\b[pP]\d{4}\b', q_raw)
+        matched_proj = None
         if pid_match:
             pid_target = pid_match.group(0).upper()
             matched_proj = next((p for p in projects if p.get("project_id", "").upper() == pid_target), None)
 
-        if not matched_proj:
-            # Check by exact string matching in project name or ID
-            for p in projects:
-                if p.get("project_id", "").lower() in q_lower or p.get("project_name", "").lower() in q_lower:
-                    matched_proj = p
-                    break
+        if matched_proj or ("why" in q_lower and any(p.get("project_id", "").lower() in q_lower for p in projects)):
+            if not matched_proj:
+                matched_proj = next((p for p in projects if p.get("project_id", "").lower() in q_lower), projects[0])
 
-        if matched_proj or "why" in q_lower:
-            p = matched_proj or projects[0]
+            p = matched_proj
             p_id = p.get("project_id")
             p_name = p.get("project_name")
             p_risk = p.get("risk_score", 0)
@@ -137,7 +151,7 @@ class AssistantEngine:
             }
 
         # 4. Expenditure / Financial Mismatch Queries
-        if any(k in q_lower for k in ["expenditure", "disbursement", "mismatch", "money", "funds", "cost"]):
+        if any(k in q_lower for k in ["expenditure", "disbursement", "mismatch", "money", "funds"]):
             mismatched = sorted(
                 [p for p in projects if (p.get("financial_progress", 0) - p.get("physical_progress", 0)) > 15],
                 key=lambda x: (x.get("financial_progress", 0) - x.get("physical_progress", 0)),
@@ -159,7 +173,7 @@ class AssistantEngine:
                 })
 
             return {
-                "answer_text": "Found projects where financial expenditure disbursements significantly outpace reported physical ground execution:",
+                "answer_text": "Identified projects where financial expenditure disbursements significantly outpace reported physical ground execution:",
                 "query_type": "table",
                 "table_columns": ["project_id", "project_name", "district", "financial_progress", "physical_progress", "mismatch_delta", "risk_score"],
                 "table_data": rows,
@@ -223,7 +237,7 @@ class AssistantEngine:
             }
 
         # 7. Delay / Timeline / Progress Queries
-        if any(k in q_lower for k in ["delay", "stuck", "slow", "lagging", "pending", "status", "progress"]):
+        if any(k in q_lower for k in ["delay", "stuck", "slow", "lagging", "pending"]):
             delayed = sorted([p for p in projects if p.get("physical_progress", 0) < 60], key=lambda x: x.get("physical_progress", 0))
             display_list = delayed if delayed else projects[:5]
 
@@ -249,24 +263,44 @@ class AssistantEngine:
                 ]
             }
 
-        # 8. Dynamic Search Fallback for Any Random Custom Query
-        tokens = [t for t in re.split(r'\W+', q_lower) if len(t) > 2]
+        # 8. Tokenized Keyword Search with Stop Word Filtering
+        raw_tokens = re.split(r'\W+', q_lower)
+        keywords = [t for t in raw_tokens if len(t) > 2 and t not in AssistantEngine.STOP_WORDS]
+
+        if not keywords:
+            return {
+                "answer_text": f"No project or entity matching **\"{query}\"** was found in the NIRIKSHAK database.",
+                "query_type": "text",
+                "suggested_followups": [
+                    "Which projects should I inspect first?",
+                    "Why is P1045 high risk?",
+                    "Show projects with high expenditure but low physical progress"
+                ]
+            }
+
         matches = []
         for p in projects:
-            score = 0
-            p_text = f"{p.get('project_id')} {p.get('project_name')} {p.get('district')} {p.get('project_type', '')}".lower()
-            for t in tokens:
-                if t in p_text:
-                    score += 1
-            if score > 0:
-                matches.append((score, p))
+            p_text = f"{p.get('project_id')} {p.get('project_name')} {p.get('district')} {p.get('project_type', '')} {p.get('agency_name', '')}".lower()
+            hit_count = sum(1 for kw in keywords if kw in p_text)
+            if hit_count > 0:
+                matches.append((hit_count, p))
 
         matches.sort(key=lambda x: x[0], reverse=True)
         matched_projects = [m[1] for m in matches]
-        display_list = matched_projects if matched_projects else projects[:4]
+
+        if not matched_projects:
+            return {
+                "answer_text": f"No project or entity matching **\"{query}\"** was found in the NIRIKSHAK database. Try searching by project ID (e.g. P1045, P3812), location (Varanasi, Lucknow), or work category (Community Hall, Trauma Care, Solar).",
+                "query_type": "text",
+                "suggested_followups": [
+                    "Which projects should I inspect first?",
+                    "Why is P1045 high risk?",
+                    "Show projects with high expenditure but low physical progress"
+                ]
+            }
 
         rows = []
-        for p in display_list:
+        for p in matched_projects:
             rows.append({
                 "project_id": p.get("project_id"),
                 "project_name": p.get("project_name"),
@@ -277,13 +311,13 @@ class AssistantEngine:
             })
 
         return {
-            "answer_text": f"Processed query **\"{query}\"** against NIRIKSHAK database. Found {len(display_list)} relevant records:",
+            "answer_text": f"Found **{len(matched_projects)} project record(s)** matching your query **\"{query}\"**:",
             "query_type": "table",
             "table_columns": ["project_id", "project_name", "district", "financial_progress", "physical_progress", "risk_score"],
             "table_data": rows,
             "suggested_followups": [
                 "Which projects should I inspect first?",
                 "Why is P1045 high risk?",
-                "Show projects with high expenditure but low physical progress"
+                "Which agency has the highest number of risk flags?"
             ]
         }

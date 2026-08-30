@@ -159,6 +159,13 @@ const FALLBACK_PROJECTS = [
   }
 ];
 
+const STOP_WORDS = new Set([
+  "tell", "me", "about", "project", "projects", "work", "works", "show", "give",
+  "details", "info", "information", "what", "is", "the", "for", "with", "and",
+  "find", "search", "list", "please", "can", "you", "view", "check", "get", "any",
+  "some", "all", "does", "have", "there"
+]);
+
 export async function fetchDashboardStats() {
   try {
     const res = await fetch(`${API_BASE}/dashboard/stats`);
@@ -649,6 +656,19 @@ export async function askNirikshakAssistant(query) {
     };
   }
 
+  // 0. Greetings & Role
+  if (["hi", "hello", "hey", "help", "who are you"].includes(qLower)) {
+    return {
+      answer_text: "Hello! I am the **NIRIKSHAK AI Assistant**. I can help you search project records, analyze financial-physical progress disparities, inspect high-risk works, check implementing agency performance, or explain risk scoring methodology. Try asking 'Which projects should I inspect first?' or 'Why is P1045 high risk?'.",
+      query_type: "text",
+      suggested_followups: [
+        "Which projects should I inspect first?",
+        "Why is P1045 high risk?",
+        "Show projects with high expenditure but low physical progress"
+      ]
+    };
+  }
+
   // 1. General Knowledge / Scheme Information Queries
   if (["what is mplads", "mplad scheme", "about mplads", "explain mplads"].some(k => qLower.includes(k))) {
     return {
@@ -712,15 +732,16 @@ export async function askNirikshakAssistant(query) {
     };
   }
 
-  // 3. Specific Project Query (Matching ID e.g. P1045, P2098, P3812, P3901, P4021, P5190, P5310, P6104 or title words)
-  let matchedProj = FALLBACK_PROJECTS.find(p => qLower.includes(p.project_id.toLowerCase()) || qLower.includes(p.project_name.toLowerCase()));
-
-  if (!matchedProj && qLower.includes("why")) {
-    matchedProj = FALLBACK_PROJECTS[0];
+  // 3. Specific Project Query (Matching ID pattern like P1045, P2098, P3812, P3901, P4021, P5190, P5310, P6104)
+  const pidMatch = qRaw.match(/\b[pP]\d{4}\b/);
+  let matchedProj = null;
+  if (pidMatch) {
+    const pidTarget = pidMatch[0].toUpperCase();
+    matchedProj = FALLBACK_PROJECTS.find(p => p.project_id.toUpperCase() === pidTarget);
   }
 
-  if (matchedProj) {
-    const proj = matchedProj;
+  if (matchedProj || (qLower.includes("why") && FALLBACK_PROJECTS.some(p => qLower.includes(p.project_id.toLowerCase())))) {
+    const proj = matchedProj || FALLBACK_PROJECTS.find(p => qLower.includes(p.project_id.toLowerCase())) || FALLBACK_PROJECTS[0];
     const finDelta = (proj.financial_progress - proj.physical_progress).toFixed(1);
     return {
       answer_text: `Project **${proj.project_id} (${proj.project_name})** in **${proj.district}** has a Risk Score of **${proj.risk_score}/100** (${proj.risk_level} Risk). Here is the evidence breakdown:`,
@@ -742,7 +763,7 @@ export async function askNirikshakAssistant(query) {
   }
 
   // 4. Expenditure / Disbursement / Financial Mismatch
-  if (["expenditure", "disbursement", "mismatch", "funds", "money", "cost"].some(k => qLower.includes(k))) {
+  if (["expenditure", "disbursement", "mismatch", "funds", "money"].some(k => qLower.includes(k))) {
     const mismatched = [...FALLBACK_PROJECTS]
       .map(p => ({ ...p, delta: (p.financial_progress - p.physical_progress).toFixed(1) }))
       .sort((a, b) => parseFloat(b.delta) - parseFloat(a.delta));
@@ -830,7 +851,7 @@ export async function askNirikshakAssistant(query) {
   }
 
   // 7. Delay / Progress Queries
-  if (["delay", "stuck", "slow", "lagging", "pending", "status", "progress"].some(k => qLower.includes(k))) {
+  if (["delay", "stuck", "slow", "lagging", "pending"].some(k => qLower.includes(k))) {
     const delayed = [...FALLBACK_PROJECTS].sort((a, b) => a.physical_progress - b.physical_progress);
     return {
       answer_text: "Projects exhibiting physical execution delays lag behind scheduled completion benchmarks:",
@@ -851,20 +872,44 @@ export async function askNirikshakAssistant(query) {
     };
   }
 
-  // 8. Dynamic Token Search Fallback for ANY random question
-  const tokens = qLower.split(/\W+/).filter(t => t.length > 2);
+  // 8. Tokenized Keyword Search with Stop Word Filtering
+  const rawTokens = qLower.split(/\W+/);
+  const keywords = rawTokens.filter(t => t.length > 2 && !STOP_WORDS.has(t));
+
+  if (keywords.length === 0) {
+    return {
+      answer_text: `No project or entity matching **"${query}"** was found in the NIRIKSHAK database.`,
+      query_type: "text",
+      suggested_followups: [
+        "Which projects should I inspect first?",
+        "Why is P1045 high risk?",
+        "Show projects with high expenditure but low physical progress"
+      ]
+    };
+  }
+
   const searchResults = FALLBACK_PROJECTS.filter(p => {
     const pText = `${p.project_id} ${p.project_name} ${p.district} ${p.project_type} ${p.agency_name}`.toLowerCase();
-    return tokens.some(t => pText.includes(t));
+    return keywords.some(kw => pText.includes(kw));
   });
 
-  const displayList = searchResults.length > 0 ? searchResults : FALLBACK_PROJECTS.slice(0, 4);
+  if (searchResults.length === 0) {
+    return {
+      answer_text: `No project or entity matching **"${query}"** was found in the NIRIKSHAK database. Try searching by project ID (e.g. P1045, P3812), location (Varanasi, Lucknow), or work category (Community Hall, Trauma Care, Solar).`,
+      query_type: "text",
+      suggested_followups: [
+        "Which projects should I inspect first?",
+        "Why is P1045 high risk?",
+        "Show projects with high expenditure but low physical progress"
+      ]
+    };
+  }
 
   return {
-    answer_text: `Processed query **"${query}"** against NIRIKSHAK project intelligence database. Found ${displayList.length} relevant project records:`,
+    answer_text: `Found **${searchResults.length} project record(s)** matching your query **"${query}"**:`,
     query_type: "table",
     table_columns: ["project_id", "project_name", "district", "financial_progress", "physical_progress", "risk_score"],
-    table_data: displayList.map(p => ({
+    table_data: searchResults.map(p => ({
       project_id: p.project_id,
       project_name: p.project_name,
       district: p.district,
