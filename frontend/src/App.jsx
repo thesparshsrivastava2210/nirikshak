@@ -30,12 +30,13 @@ export default function App() {
       )}
 
       <BrowserRouter>
-        <div className="flex min-h-screen bg-slate-50 text-slate-900 font-sans overflow-x-hidden">
+        {/* Outer Flex Wrapper set to dark navy (bg-slate-900) so sidebar background never shows white gaps */}
+        <div className="flex min-h-screen bg-slate-900 text-slate-900 font-sans overflow-x-hidden">
           {/* Responsive Left Sidebar */}
           <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
 
-          {/* Main Workspace Area */}
-          <div className="flex-1 flex flex-col min-w-0 w-full overflow-x-hidden">
+          {/* Main Workspace Area (Light Slate bg-slate-50 background) */}
+          <div className="flex-1 flex flex-col min-w-0 w-full bg-slate-50 min-h-screen overflow-x-hidden">
             {/* Top Header */}
             <Header searchVal={searchVal} setSearchVal={setSearchVal} setMobileOpen={setMobileOpen} />
 
