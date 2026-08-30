@@ -259,15 +259,20 @@ export async function fetchAgencyPatterns() {
 
   return [
     {
+      agency_id: 1,
       agency_name: "UP Public Works Department (PWD) Division II",
+      agency_type: "Public Works Department",
       total_projects: 24,
+      high_risk_projects: 8,
+      cost_deviation_cases: 6,
+      delay_cases: 9,
+      mismatch_cases: 5,
       pattern_risk_score: 87.0,
       findings: [
         "8 out of 24 projects show significant financial-physical progress mismatch.",
         "9 projects exhibit execution schedule delays.",
         "6 projects show cost estimates exceeding peer benchmark median by >20%."
-      ],
-      high_risk_projects: FALLBACK_PROJECTS.slice(0, 2)
+      ]
     }
   ];
 }

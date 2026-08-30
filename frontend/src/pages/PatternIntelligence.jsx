@@ -148,37 +148,42 @@ export default function PatternIntelligence() {
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {agencies.map((a) => (
-            <div key={a.agency_id} className="bg-white rounded-lg border border-slate-200 p-5 shadow-sm space-y-3">
-              <div className="flex items-start justify-between border-b border-slate-200 pb-3">
-                <div>
-                  <span className="text-[10px] font-bold text-slate-500 uppercase">{a.agency_type}</span>
-                  <h3 className="text-sm font-bold text-slate-900 leading-tight mt-0.5">{a.agency_name}</h3>
-                </div>
-                <div className="text-right">
-                  <span className="text-xs font-extrabold bg-red-100 text-red-900 px-2 py-0.5 rounded border border-red-200">
-                    {a.pattern_risk_score} / 100
-                  </span>
-                </div>
-              </div>
+          {(Array.isArray(agencies) ? agencies : []).map((a, idx) => {
+            const highRiskCount = typeof a.high_risk_projects === 'number' ? a.high_risk_projects : (Array.isArray(a.high_risk_projects) ? a.high_risk_projects.length : 0);
+            const findingsList = Array.isArray(a.findings) ? a.findings : [];
 
-              <div className="grid grid-cols-2 gap-2 text-xs font-medium bg-slate-50 p-2.5 rounded border border-slate-200">
-                <div>Total Works: <b>{a.total_projects}</b></div>
-                <div className="text-red-700 font-semibold">High Risk: <b>{a.high_risk_projects}</b></div>
-                <div>Cost Deviation: <b>{a.cost_deviation_cases}</b></div>
-                <div>Delays: <b>{a.delay_cases}</b></div>
-              </div>
+            return (
+              <div key={a.agency_id || a.id || idx} className="bg-white rounded-lg border border-slate-200 p-5 shadow-sm space-y-3">
+                <div className="flex items-start justify-between border-b border-slate-200 pb-3">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase">{a.agency_type || 'Implementing Agency'}</span>
+                    <h3 className="text-sm font-bold text-slate-900 leading-tight mt-0.5">{a.agency_name}</h3>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-extrabold bg-red-100 text-red-900 px-2 py-0.5 rounded border border-red-200">
+                      {a.pattern_risk_score || 0} / 100
+                    </span>
+                  </div>
+                </div>
 
-              <div className="space-y-1 text-xs">
-                <span className="text-[10px] font-bold text-slate-500 uppercase block">Pattern Findings:</span>
-                {a.findings.map((f, i) => (
-                  <p key={i} className="text-slate-700 text-[11px] font-medium leading-tight flex items-start gap-1">
-                    <span className="text-red-600 font-bold">•</span> {f}
-                  </p>
-                ))}
+                <div className="grid grid-cols-2 gap-2 text-xs font-medium bg-slate-50 p-2.5 rounded border border-slate-200">
+                  <div>Total Works: <b>{a.total_projects || 0}</b></div>
+                  <div className="text-red-700 font-semibold">High Risk: <b>{highRiskCount}</b></div>
+                  <div>Cost Deviation: <b>{a.cost_deviation_cases || 0}</b></div>
+                  <div>Delays: <b>{a.delay_cases || 0}</b></div>
+                </div>
+
+                <div className="space-y-1 text-xs">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block">Pattern Findings:</span>
+                  {findingsList.map((f, i) => (
+                    <p key={i} className="text-slate-700 text-[11px] font-medium leading-tight flex items-start gap-1">
+                      <span className="text-red-600 font-bold">•</span> {f}
+                    </p>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
