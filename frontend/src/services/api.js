@@ -634,10 +634,62 @@ export async function askNirikshakAssistant(query) {
     console.warn("Backend API unreachable, using resilient client fallback");
   }
 
-  const qLower = (query || "").toLowerCase().trim();
+  const qRaw = query || "";
+  const qLower = qRaw.toLowerCase().trim();
 
-  // Pattern 1: Inspection / Priority Query ("inspect", "priority", "first", "queue", "urgent")
-  if (qLower.includes("inspect") || qLower.includes("priority") || qLower.includes("first") || qLower.includes("queue") || qLower.includes("urgent")) {
+  if (!qLower) {
+    return {
+      answer_text: "Please enter a question or select one of the suggested queries below.",
+      query_type: "text",
+      suggested_followups: [
+        "Which projects should I inspect first?",
+        "Why is P1045 high risk?",
+        "Show projects with high expenditure but low physical progress"
+      ]
+    };
+  }
+
+  // 1. General Knowledge / Scheme Information Queries
+  if (["what is mplads", "mplad scheme", "about mplads", "explain mplads"].some(k => qLower.includes(k))) {
+    return {
+      answer_text: "**MPLADS (Member of Parliament Local Area Development Scheme)** allows Members of Parliament to recommend development works of developmental nature with emphasis on creation of durable community assets (drinking water, primary education, public health, sanitation, and roads) in their constituencies. NIRIKSHAK provides AI-driven risk intelligence and audit oversight across all MPLADS funds.",
+      query_type: "key_value",
+      details: [
+        { label: "Scheme Focus", value: "Durable community assets & public infrastructure" },
+        { label: "Annual Entitlement", value: "₹5 Crore per Member of Parliament per year" },
+        { label: "Nodal Ministry", value: "Ministry of Statistics & Programme Implementation (MoSPI)" },
+        { label: "NIRIKSHAK Role", value: "Automated anomaly detection, risk scoring & field audit prioritization" }
+      ],
+      suggested_followups: [
+        "How does NIRIKSHAK calculate risk scores?",
+        "Which projects should I inspect first?",
+        "Show projects with high expenditure but low physical progress"
+      ]
+    };
+  }
+
+  if (["how risk score", "risk engine", "risk formula", "how do you calculate risk", "risk calculation"].some(k => qLower.includes(k))) {
+    return {
+      answer_text: "NIRIKSHAK's Risk Engine calculates project risk scores from **0 to 100** using a 6-factor composite weighting algorithm:",
+      query_type: "key_value",
+      details: [
+        { label: "1. Expenditure Disparity (24.4%)", value: "Gap between financial disbursement % and reported physical ground progress" },
+        { label: "2. Cost vs Peer Median (18.0%)", value: "Sanctioned cost deviation compared against similar peer twin works" },
+        { label: "3. Completion Delay (17.0%)", value: "Actual physical execution lagging behind benchmark target schedule" },
+        { label: "4. Peer Execution Lag (13.0%)", value: "Progress lagging behind peer twin benchmark average" },
+        { label: "5. Spatial Overlap Signal (10.0%)", value: "GIS proximity (<1km radius) and work description similarity (>85%)" },
+        { label: "6. Agency Risk Density (10.0%)", value: "Historical anomaly density of the implementing agency" }
+      ],
+      suggested_followups: [
+        "Which projects should I inspect first?",
+        "Why is P1045 high risk?",
+        "Which agency has the highest risk flags?"
+      ]
+    };
+  }
+
+  // 2. Priority / Inspection Queue Queries
+  if (["inspect", "priority", "queue", "urgent", "first"].some(k => qLower.includes(k))) {
     const criticals = FALLBACK_PROJECTS.filter(p => p.risk_level === "CRITICAL" || p.risk_score >= 60)
       .sort((a, b) => b.risk_score - a.risk_score);
     return {
@@ -660,12 +712,15 @@ export async function askNirikshakAssistant(query) {
     };
   }
 
-  // Pattern 2: Project-specific Inquiry ("why", "p1045", "p2098", "p3812", "p5310", "p6104" or project ID matching)
-  const matchedProject = FALLBACK_PROJECTS.find(p => qLower.includes(p.project_id.toLowerCase()) || qLower.includes(p.project_name.toLowerCase())) ||
-    (qLower.includes("why") ? FALLBACK_PROJECTS[0] : null);
+  // 3. Specific Project Query (Matching ID e.g. P1045, P2098, P3812, P3901, P4021, P5190, P5310, P6104 or title words)
+  let matchedProj = FALLBACK_PROJECTS.find(p => qLower.includes(p.project_id.toLowerCase()) || qLower.includes(p.project_name.toLowerCase()));
 
-  if (matchedProject || qLower.includes("why")) {
-    const proj = matchedProject || FALLBACK_PROJECTS[0];
+  if (!matchedProj && qLower.includes("why")) {
+    matchedProj = FALLBACK_PROJECTS[0];
+  }
+
+  if (matchedProj) {
+    const proj = matchedProj;
     const finDelta = (proj.financial_progress - proj.physical_progress).toFixed(1);
     return {
       answer_text: `Project **${proj.project_id} (${proj.project_name})** in **${proj.district}** has a Risk Score of **${proj.risk_score}/100** (${proj.risk_level} Risk). Here is the evidence breakdown:`,
@@ -686,8 +741,8 @@ export async function askNirikshakAssistant(query) {
     };
   }
 
-  // Pattern 3: Expenditure / Disbursement / Financial Mismatch ("expenditure", "progress", "mismatch", "funds", "money", "disbursement")
-  if (qLower.includes("expenditure") || qLower.includes("disbursement") || qLower.includes("mismatch") || qLower.includes("funds") || qLower.includes("money")) {
+  // 4. Expenditure / Disbursement / Financial Mismatch
+  if (["expenditure", "disbursement", "mismatch", "funds", "money", "cost"].some(k => qLower.includes(k))) {
     const mismatched = [...FALLBACK_PROJECTS]
       .map(p => ({ ...p, delta: (p.financial_progress - p.physical_progress).toFixed(1) }))
       .sort((a, b) => parseFloat(b.delta) - parseFloat(a.delta));
@@ -712,8 +767,8 @@ export async function askNirikshakAssistant(query) {
     };
   }
 
-  // Pattern 4: Agency / Contractor / Vendor ("agency", "contractor", "vendor", "pwd", "res")
-  if (qLower.includes("agency") || qLower.includes("contractor") || qLower.includes("vendor") || qLower.includes("pwd")) {
+  // 5. Agency / Contractor Queries
+  if (["agency", "contractor", "vendor", "pwd", "res"].some(k => qLower.includes(k))) {
     return {
       answer_text: "Systemic risk density overview across implementing agencies and contractors in the jurisdiction:",
       query_type: "table",
@@ -748,15 +803,15 @@ export async function askNirikshakAssistant(query) {
     };
   }
 
-  // Pattern 5: District / Geographic Location Query ("varanasi", "lucknow", "patna", "bengaluru", "district")
+  // 6. District / Location Queries
   const matchedDistrict = ["Varanasi", "Lucknow", "Patna", "Bengaluru Urban"].find(d => qLower.includes(d.toLowerCase()));
-  if (matchedDistrict || qLower.includes("district") || qLower.includes("state")) {
+  if (matchedDistrict || ["district", "location", "city", "state"].some(k => qLower.includes(k))) {
     const targetDistrict = matchedDistrict || "Varanasi";
     const distProjects = FALLBACK_PROJECTS.filter(p => p.district.toLowerCase() === targetDistrict.toLowerCase());
     const displayList = distProjects.length > 0 ? distProjects : FALLBACK_PROJECTS;
 
     return {
-      answer_text: `Analysis summary for **${targetDistrict}** jurisdiction records in NIRIKSHAK database:`,
+      answer_text: `Found **${displayList.length} project records** matching geographical region **${targetDistrict}**:`,
       query_type: "table",
       table_columns: ["project_id", "project_name", "district", "sanction_amount", "physical_progress", "risk_score"],
       table_data: displayList.map(p => ({
@@ -774,17 +829,39 @@ export async function askNirikshakAssistant(query) {
     };
   }
 
-  // Fallback for any other custom user query
-  const searchResults = FALLBACK_PROJECTS.filter(p =>
-    p.project_name.toLowerCase().includes(qLower) ||
-    p.project_id.toLowerCase().includes(qLower) ||
-    p.project_type.toLowerCase().includes(qLower)
-  );
+  // 7. Delay / Progress Queries
+  if (["delay", "stuck", "slow", "lagging", "pending", "status", "progress"].some(k => qLower.includes(k))) {
+    const delayed = [...FALLBACK_PROJECTS].sort((a, b) => a.physical_progress - b.physical_progress);
+    return {
+      answer_text: "Projects exhibiting physical execution delays lag behind scheduled completion benchmarks:",
+      query_type: "table",
+      table_columns: ["project_id", "project_name", "district", "physical_progress", "financial_progress", "risk_score"],
+      table_data: delayed.map(p => ({
+        project_id: p.project_id,
+        project_name: p.project_name,
+        district: p.district,
+        physical_progress: `${p.physical_progress}%`,
+        financial_progress: `${p.financial_progress}%`,
+        risk_score: `${p.risk_score} / 100`
+      })),
+      suggested_followups: [
+        "Which projects should I inspect first?",
+        "Why is P1045 high risk?"
+      ]
+    };
+  }
+
+  // 8. Dynamic Token Search Fallback for ANY random question
+  const tokens = qLower.split(/\W+/).filter(t => t.length > 2);
+  const searchResults = FALLBACK_PROJECTS.filter(p => {
+    const pText = `${p.project_id} ${p.project_name} ${p.district} ${p.project_type} ${p.agency_name}`.toLowerCase();
+    return tokens.some(t => pText.includes(t));
+  });
 
   const displayList = searchResults.length > 0 ? searchResults : FALLBACK_PROJECTS.slice(0, 4);
 
   return {
-    answer_text: `Processed query "${query}" against NIRIKSHAK project intelligence database. Here are the relevant project records matching your search:`,
+    answer_text: `Processed query **"${query}"** against NIRIKSHAK project intelligence database. Found ${displayList.length} relevant project records:`,
     query_type: "table",
     table_columns: ["project_id", "project_name", "district", "financial_progress", "physical_progress", "risk_score"],
     table_data: displayList.map(p => ({
