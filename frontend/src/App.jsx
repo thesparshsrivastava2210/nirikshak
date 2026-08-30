@@ -1,0 +1,53 @@
+import React, { useState } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import Sidebar from './components/layout/Sidebar';
+import Header from './components/layout/Header';
+
+import CommandCenter from './pages/CommandCenter';
+import RiskRadar from './pages/RiskRadar';
+import ProjectsList from './pages/ProjectsList';
+import ProjectIntelligence from './pages/ProjectIntelligence';
+import PeerTwins from './pages/PeerTwins';
+import PatternIntelligence from './pages/PatternIntelligence';
+import GeoIntelligence from './pages/GeoIntelligence';
+import InvestigationCentre from './pages/InvestigationCentre';
+import ReportsPage from './pages/ReportsPage';
+import AskNirishak from './pages/AskNirishak';
+
+export default function App() {
+  const [searchVal, setSearchVal] = useState('');
+
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <div className="flex min-h-screen bg-slate-50 text-slate-900 font-sans">
+          {/* Persistent Left Sidebar */}
+          <Sidebar />
+
+          {/* Main Workspace Area */}
+          <div className="flex-1 flex flex-col min-w-0">
+            {/* Persistent Top Header */}
+            <Header searchVal={searchVal} setSearchVal={setSearchVal} />
+
+            {/* Router Page Container */}
+            <main className="flex-1 overflow-y-auto pb-12">
+              <Routes>
+                <Route path="/" element={<CommandCenter />} />
+                <Route path="/risk-radar" element={<RiskRadar />} />
+                <Route path="/projects" element={<ProjectsList />} />
+                <Route path="/projects/:projectId" element={<ProjectIntelligence />} />
+                <Route path="/peer-twins" element={<PeerTwins />} />
+                <Route path="/pattern-intelligence" element={<PatternIntelligence />} />
+                <Route path="/geo-intelligence" element={<GeoIntelligence />} />
+                <Route path="/investigation-centre" element={<InvestigationCentre />} />
+                <Route path="/reports" element={<ReportsPage />} />
+                <Route path="/ask-nirishak" element={<AskNirishak />} />
+              </Routes>
+            </main>
+          </div>
+        </div>
+      </BrowserRouter>
+    </AuthProvider>
+  );
+}
