@@ -28,8 +28,8 @@ def get_report_summary(
 
     for p in projects:
         rs = db.query(models.RiskScore).filter(models.RiskScore.project_id == p.id).first()
-        r_lvl = rs.risk_level if rs else "LOW"
-        r_score = rs.total_score if rs else 0.0
+        r_lvl = rs.risk_level if rs else getattr(p, "risk_level", "LOW")
+        r_score = rs.total_score if rs else getattr(p, "risk_score", 0.0)
 
         if risk_level != "All" and r_lvl != risk_level:
             continue
@@ -38,25 +38,25 @@ def get_report_summary(
             "project_id": p.project_id,
             "project_name": p.project_name,
             "district": p.district,
-            "sanction_amount": f"₹{p.sanction_amount}L",
-            "expenditure": f"₹{p.expenditure}L",
-            "physical_progress": f"{p.physical_progress}%",
-            "financial_progress": f"{p.financial_progress}%",
+            "sanction_amount": p.sanction_amount,
+            "expenditure": p.expenditure,
+            "physical_progress": p.physical_progress,
+            "financial_progress": p.financial_progress,
             "risk_score": r_score,
             "risk_level": r_lvl
         }
 
-        if r_lvl == "CRITICAL":
+        if r_lvl == "CRITICAL" or r_score >= 80:
             critical_projs.append(item)
-        elif r_lvl == "HIGH":
+        elif r_lvl == "HIGH" or (r_score >= 50 and r_score < 80):
             high_projs.append(item)
 
     return {
-        "report_title": f"MPLADS Risk Intelligence Executive Report — {district if district != 'All' else 'National Summary'}",
+        "report_title": f"MPLADS Governance Risk & Audit Report ({district if district != 'All' else (state if state != 'All' else 'National Summary')})",
         "generated_date": "2024-10-24",
         "authority_scope": f"State: {state} | District: {district}",
         "executive_summary": (
-            f"Analysis of {len(projects)} sanctioned MPLADS works totaling ₹{round(total_sanctioned/100, 2)} Cr. "
+            f"Analysis of {len(projects)} sanctioned MPLADS works totaling ₹{round(total_sanctioned/100, 2)} Cr in {district if district != 'All' else 'the selected jurisdiction'}. "
             f"Average physical completion stands at {round(avg_physical, 1)}%. "
             f"{len(critical_projs)} works require high-priority physical measurement verification."
         ),

@@ -3,7 +3,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL ||
     ? "http://127.0.0.1:8000/api"
     : "/api");
 
-// Shared fallback dataset for 100% online availability
+// Shared fallback dataset across all jurisdictions (Varanasi, Lucknow, Patna, Bengaluru Urban)
 const FALLBACK_PROJECTS = [
   {
     id: 1,
@@ -46,24 +46,43 @@ const FALLBACK_PROJECTS = [
   {
     id: 3,
     project_id: "P3812",
-    project_name: "Construction of Model Anganwadi & Child Care Center",
-    project_type: "Anganwadi Center Building",
+    project_name: "Construction of District Trauma Care & Multi-Specialty Block",
+    project_type: "Healthcare Infrastructure",
     state: "Uttar Pradesh",
     district: "Lucknow",
-    village: "Chinhat",
-    sanction_amount: 51.0,
-    expenditure: 45.0,
-    physical_progress: 40.0,
-    financial_progress: 88.2,
-    estimated_cost: 51.0,
-    status: "Delayed",
+    village: "Chinhat Sector 4",
+    sanction_amount: 145.0,
+    expenditure: 138.0,
+    physical_progress: 45.0,
+    financial_progress: 95.2,
+    estimated_cost: 145.0,
+    status: "Under Implementation",
     sanction_date: "2024-01-20",
-    risk_score: 53.1,
-    risk_level: "MEDIUM",
-    agency_name: "UP Rural Engineering Services (RES)"
+    risk_score: 88.5,
+    risk_level: "CRITICAL",
+    agency_name: "UP State Construction Corporation"
   },
   {
     id: 4,
+    project_id: "P3901",
+    project_name: "Upgradation of Government Intermediate College Science Labs",
+    project_type: "Educational Infrastructure",
+    state: "Uttar Pradesh",
+    district: "Lucknow",
+    village: "Alambagh Ward 8",
+    sanction_amount: 42.0,
+    expenditure: 31.5,
+    physical_progress: 52.0,
+    financial_progress: 75.0,
+    estimated_cost: 42.0,
+    status: "Under Implementation",
+    sanction_date: "2024-02-14",
+    risk_score: 64.2,
+    risk_level: "HIGH",
+    agency_name: "UP Rural Engineering Services (RES)"
+  },
+  {
+    id: 5,
     project_id: "P4021",
     project_name: "Installation of High-Mast Solar Street Lighting System",
     project_type: "Solar Street Lighting System",
@@ -82,7 +101,7 @@ const FALLBACK_PROJECTS = [
     agency_name: "UP New & Renewable Energy Development Agency"
   },
   {
-    id: 5,
+    id: 6,
     project_id: "P5190",
     project_name: "Construction of Rural Water Supply Pipeline & Overhead Tank",
     project_type: "Rural Water Supply Pipeline",
@@ -99,6 +118,44 @@ const FALLBACK_PROJECTS = [
     risk_score: 18.0,
     risk_level: "LOW",
     agency_name: "Karnataka Urban Water Supply Board"
+  },
+  {
+    id: 7,
+    project_id: "P5310",
+    project_name: "Construction of Storm Water Drain & Culvert Network",
+    project_type: "Drainage Infrastructure",
+    state: "Karnataka",
+    district: "Bengaluru Urban",
+    village: "Mahadevapura",
+    sanction_amount: 110.0,
+    expenditure: 102.0,
+    physical_progress: 58.0,
+    financial_progress: 92.7,
+    estimated_cost: 110.0,
+    status: "Under Implementation",
+    sanction_date: "2024-03-01",
+    risk_score: 84.0,
+    risk_level: "CRITICAL",
+    agency_name: "BBMP Infrastructure Division"
+  },
+  {
+    id: 8,
+    project_id: "P6104",
+    project_name: "Construction of Flood Protection Embankment & Canal Wall",
+    project_type: "Flood Protection Embankment",
+    state: "Bihar",
+    district: "Patna",
+    village: "Phulwari Sharif",
+    sanction_amount: 95.0,
+    expenditure: 89.0,
+    physical_progress: 49.0,
+    financial_progress: 93.6,
+    estimated_cost: 95.0,
+    status: "Under Implementation",
+    sanction_date: "2024-02-10",
+    risk_score: 91.2,
+    risk_level: "CRITICAL",
+    agency_name: "Bihar Water Resources Department"
   }
 ];
 
@@ -180,6 +237,12 @@ export async function fetchProjects(filters = {}) {
   }
   
   let list = [...FALLBACK_PROJECTS];
+  if (filters.state && filters.state !== "All") {
+    list = list.filter(p => p.state === filters.state);
+  }
+  if (filters.district && filters.district !== "All") {
+    list = list.filter(p => p.district === filters.district);
+  }
   if (filters.risk_level && filters.risk_level !== "All") {
     list = list.filter(p => p.risk_level === filters.risk_level);
   }
@@ -206,25 +269,24 @@ export async function fetchProjectIntelligence(projectId) {
       risk_level: proj.risk_level,
       breakdown: { financial_score: 22.4, cost_score: 18.0, delay_score: 17.0, peer_score: 13.0, duplicate_score: 10.0, agency_score: 11.6 }
     },
-    ai_insight: "Financial utilization (91.8%) is significantly ahead of reported physical ground progress (47.0%). Physical verification is strongly recommended.",
+    ai_insight: "Financial utilization is significantly ahead of reported physical ground progress. Physical verification is strongly recommended.",
     risk_factors: [
-      { id: 1, factor_type: "Financial-Physical Mismatch", score_contribution: 22.4, title: "Expenditure Disparity", description: "91.8% of sanctioned funds disbursed while physical execution stands at only 47.0%.", evidence: "Financial Progress: 91.8% | Physical Progress: 47.0% | Delta: +44.8%" },
-      { id: 2, factor_type: "Completion Deviation", score_contribution: 17.0, title: "Timeline Slippage", description: "Physical ground progress (47.0%) lags benchmark expected completion target (75.0%).", evidence: "Actual Progress: 47.0% | Expected: 75.0% | Lag: -28.0%" },
-      { id: 3, factor_type: "Peer Deviation", score_contribution: 13.0, title: "Peer Twin Progress Lag", description: "Project ground execution (47.0%) lags behind peer twin average (73.8%).", evidence: "Project Progress: 47.0% | Peer Twin Average: 73.8%" },
-      { id: 4, factor_type: "Potential Overlap", score_contribution: 10.0, title: "Duplicate Work Signal", description: "Potential spatial and description overlap detected with project 'P2098' within 850m distance.", evidence: "Similarity: 91% | Distance: 850m" }
+      { id: 1, factor_type: "Financial-Physical Mismatch", score_contribution: 22.4, title: "Expenditure Disparity", description: `${proj.financial_progress}% of sanctioned funds disbursed while physical execution stands at only ${proj.physical_progress}%.`, evidence: `Financial Progress: ${proj.financial_progress}% | Physical Progress: ${proj.physical_progress}%` },
+      { id: 2, factor_type: "Completion Deviation", score_contribution: 17.0, title: "Timeline Slippage", description: `Physical ground progress (${proj.physical_progress}%) lags benchmark expected completion target (75.0%).`, evidence: `Actual Progress: ${proj.physical_progress}% | Expected: 75.0%` },
+      { id: 3, factor_type: "Peer Deviation", score_contribution: 13.0, title: "Peer Twin Progress Lag", description: `Project ground execution (${proj.physical_progress}%) lags behind peer twin average (73.8%).`, evidence: `Project Progress: ${proj.physical_progress}% | Peer Twin Average: 73.8%` }
     ],
     trajectory: [
       { milestone: "Sanction (Mar 2024)", expected_progress: 0, actual_progress: 0, expenditure: 0 },
       { milestone: "Q1 (May 2024)", expected_progress: 25, actual_progress: 15, expenditure: 20 },
       { milestone: "Q2 (Jul 2024)", expected_progress: 50, actual_progress: 35, expenditure: 55 },
-      { milestone: "Q3 Current (Oct 2024)", expected_progress: 74, actual_progress: 47.0, expenditure: 91.8 },
+      { milestone: "Q3 Current (Oct 2024)", expected_progress: 74, actual_progress: proj.physical_progress, expenditure: proj.financial_progress },
       { milestone: "Target (Jan 2025)", expected_progress: 100, actual_progress: null, expenditure: null }
     ],
     predicted_delay_days: 63,
     evidences: [
-      { id: 1, file_url: "https://images.unsplash.com/photo-1541888946425-d0fbb186a5b7?w=600&auto=format&fit=crop&q=80", latitude: 25.3582, longitude: 82.9731, capture_date: "2024-04-15", evidence_type: "Foundation Inspection", reported_progress: 15.0, description: "Excavation and brick masonry foundation laid. 15% physical completion verified." },
-      { id: 2, file_url: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=600&auto=format&fit=crop&q=80", latitude: 25.3582, longitude: 82.9731, capture_date: "2024-07-20", evidence_type: "Superstructure Slab", reported_progress: 35.0, description: "RCC column casting completed. Formwork erected for roof slab. 35% progress." },
-      { id: 3, file_url: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=600&auto=format&fit=crop&q=80", latitude: 25.3582, longitude: 82.9731, capture_date: "2024-10-10", evidence_type: "Wall Masonry & Plaster", reported_progress: 47.0, description: "Outer wall masonry complete. Interior electrical conduit wiring pending. Physical progress 47%." }
+      { id: 1, file_url: "https://images.unsplash.com/photo-1541888946425-d0fbb186a5b7?w=600&auto=format&fit=crop&q=80", latitude: 25.3582, longitude: 82.9731, capture_date: "2024-04-15", evidence_type: "Foundation Inspection", reported_progress: 15.0, description: "Excavation and brick masonry foundation laid." },
+      { id: 2, file_url: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=600&auto=format&fit=crop&q=80", latitude: 25.3582, longitude: 82.9731, capture_date: "2024-07-20", evidence_type: "Superstructure Slab", reported_progress: 35.0, description: "RCC column casting completed. Formwork erected for roof slab." },
+      { id: 3, file_url: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=600&auto=format&fit=crop&q=80", latitude: 25.3582, longitude: 82.9731, capture_date: "2024-10-10", evidence_type: "Wall Masonry & Plaster", reported_progress: proj.physical_progress, description: `Outer wall masonry complete. Interior wiring pending. Physical progress ${proj.physical_progress}%.` }
     ]
   };
 }
@@ -238,14 +300,22 @@ export async function fetchPeerTwins(projectId) {
   }
 
   const proj = FALLBACK_PROJECTS.find(p => p.project_id === projectId) || FALLBACK_PROJECTS[0];
+  const peers = FALLBACK_PROJECTS.filter(p => p.project_id !== proj.project_id && (p.district === proj.district || p.state === proj.state)).slice(0, 3);
   return {
     target_project: proj,
-    peer_twins: [
-      { id: 2, project_id: "P2098", project_name: "Construction of Public Community Centre Building", district: "Varanasi", estimated_cost: 72.0, physical_progress: 42.0, financial_progress: 62.5, similarity_score: 91.0, distance_meters: 850.0 },
-      { id: 3, project_id: "P3011", project_name: "Construction of Multipurpose Hall", district: "Varanasi", estimated_cost: 55.0, physical_progress: 69.0, financial_progress: 70.0, similarity_score: 89.0, distance_meters: 1400.0 }
-    ],
+    peer_twins: peers.map((p, idx) => ({
+      id: p.id,
+      project_id: p.project_id,
+      project_name: p.project_name,
+      district: p.district,
+      estimated_cost: p.estimated_cost,
+      physical_progress: p.physical_progress,
+      financial_progress: p.financial_progress,
+      similarity_score: 91.0 - (idx * 3),
+      distance_meters: 850.0 + (idx * 400)
+    })),
     benchmarks: { peer_median_cost: 52.0, peer_avg_physical_progress: 73.8, peer_avg_financial_progress: 72.0, cost_ratio_vs_peer: 1.31 },
-    insight: "Current project cost (₹68.0L) is 31% above peer twin median cost (₹52.0L)."
+    insight: `Current project cost (₹${proj.estimated_cost}L) is compared against peer twin benchmark median cost (₹52.0L).`
   };
 }
 
@@ -273,6 +343,21 @@ export async function fetchAgencyPatterns() {
         "9 projects exhibit execution schedule delays.",
         "6 projects show cost estimates exceeding peer benchmark median by >20%."
       ]
+    },
+    {
+      agency_id: 2,
+      agency_name: "UP State Construction Corporation",
+      agency_type: "State Corporation",
+      total_projects: 18,
+      high_risk_projects: 5,
+      cost_deviation_cases: 4,
+      delay_cases: 6,
+      mismatch_cases: 4,
+      pattern_risk_score: 76.5,
+      findings: [
+        "5 out of 18 projects show timeline delays exceeding 60 days.",
+        "4 projects show financial utilization >90% while physical progress is <50%."
+      ]
     }
   ];
 }
@@ -289,7 +374,8 @@ export async function fetchRelationshipGraph() {
     nodes: [
       { id: "agency_1", label: "UP PWD Division II\n(Agency Risk: 87/100)", group: "AGENCY", color: "#ef4444" },
       { id: "project_1", label: "P1045: Community Hall\n(Risk: 92/100)", group: "PROJECT", color: "#dc2626" },
-      { id: "project_2", label: "P2098: Community Centre\n(Risk: 36.5/100)", group: "PROJECT", color: "#f59e0b" }
+      { id: "project_2", label: "P2098: Community Centre\n(Risk: 36.5/100)", group: "PROJECT", color: "#f59e0b" },
+      { id: "project_3", label: "P3812: Trauma Care\n(Risk: 88.5/100)", group: "PROJECT", color: "#dc2626" }
     ],
     edges: [
       { from: "agency_1", to: "project_1", label: "Executed By" },
@@ -373,8 +459,8 @@ export async function fetchGeoMapData() {
     project_id: p.project_id,
     project_name: p.project_name,
     district: p.district,
-    latitude: 25.3582,
-    longitude: 82.9731,
+    latitude: p.district === 'Varanasi' ? 25.3582 : (p.district === 'Lucknow' ? 26.8467 : (p.district === 'Patna' ? 25.5941 : 12.9716)),
+    longitude: p.district === 'Varanasi' ? 82.9731 : (p.district === 'Lucknow' ? 80.9462 : (p.district === 'Patna' ? 85.1376 : 77.5946)),
     risk_score: p.risk_score,
     risk_level: p.risk_level,
     sanction_amount: p.sanction_amount,
@@ -405,6 +491,21 @@ export async function fetchInvestigations() {
       recommended_action: "Field Measurement Audit & Site Inspection",
       status: "Open",
       due_date: "2024-11-30"
+    },
+    {
+      id: 2,
+      case_id: "CAS-2024-002",
+      priority: 2,
+      project_id: "P3812",
+      project_name: "Construction of District Trauma Care & Multi-Specialty Block",
+      district: "Lucknow",
+      risk_score: 88.5,
+      financial_exposure: 145.0,
+      evidence_strength: "High",
+      primary_reason: "95.2% financial progress vs 45.0% physical completion.",
+      recommended_action: "Physical Verification & Ledger Voucher Inspection",
+      status: "Open",
+      due_date: "2024-12-05"
     }
   ];
 }
@@ -420,15 +521,14 @@ export async function fetchInvestigationBrief(investigationId) {
   return {
     investigation_id: investigationId,
     project: FALLBACK_PROJECTS[0],
-    summary: "Project P1045 in Varanasi prioritized for field verification due to Critical Risk Score 92/100.",
+    summary: "Project prioritized for field verification due to Critical Risk Score.",
     risk_factors: [
-      { title: "Expenditure Disparity", description: "91.8% funds disbursed vs 47.0% physical progress." }
+      { title: "Expenditure Disparity", description: "Financial utilization far outpaces physical progress." }
     ],
     recommended_checklist: [
       "1. Verify reported physical progress ground logs",
       "2. Review expenditure disbursement vouchers",
-      "3. Compare measurement book records",
-      "4. Verify nearby similar work P2098"
+      "3. Compare measurement book records"
     ]
   };
 }
@@ -467,14 +567,58 @@ export async function fetchReportSummary(state = "All", district = "All", risk_l
     console.warn("Backend API unreachable, using resilient client fallback");
   }
 
+  let filtered = [...FALLBACK_PROJECTS];
+  if (state && state !== "All") {
+    filtered = filtered.filter(p => p.state === state);
+  }
+  if (district && district !== "All") {
+    filtered = filtered.filter(p => p.district === district);
+  }
+  if (risk_level && risk_level !== "All") {
+    filtered = filtered.filter(p => p.risk_level === risk_level);
+  }
+
+  const critical = filtered.filter(p => p.risk_level === "CRITICAL" || p.risk_score >= 80);
+  const high = filtered.filter(p => p.risk_level === "HIGH" || (p.risk_score >= 50 && p.risk_score < 80));
+  const totalSanctions = filtered.length;
+  const totalVal = filtered.reduce((acc, p) => acc + (p.estimated_cost || p.sanction_amount || 0), 0);
+  const avgPhys = totalSanctions > 0 ? (filtered.reduce((acc, p) => acc + p.physical_progress, 0) / totalSanctions) : 0;
+
   return {
-    report_title: `MPLADS Governance Risk & Audit Report (${district === 'All' ? state : district})`,
-    authority_scope: "Ministry of Statistics & Programme Implementation (MoSPI)",
+    report_title: `MPLADS Governance Risk & Audit Report (${district !== 'All' ? district : (state !== 'All' ? state : 'National Summary')})`,
+    authority_scope: `Ministry of Statistics & Programme Implementation (MoSPI) — ${district !== 'All' ? district : state}`,
     generated_date: new Date().toISOString().slice(0, 10),
-    executive_summary: "Multi-factor audit scanning identifies 7 projects with irregularity signals requiring field verification.",
-    metrics: { total_projects: 20, total_sanctioned_cr: 9.86, avg_physical_progress: 64.6, critical_risk_count: 1 },
-    critical_projects: FALLBACK_PROJECTS.slice(0, 2),
-    high_risk_projects: []
+    executive_summary: `Multi-factor audit scanning identifies ${critical.length + high.length} projects in ${district !== 'All' ? district : 'the selected jurisdiction'} with irregularity signals requiring field verification.`,
+    metrics: {
+      total_projects: totalSanctions,
+      total_sanctioned_cr: (totalVal / 100).toFixed(2),
+      total_expenditure_cr: (totalVal * 0.75 / 100).toFixed(2),
+      avg_physical_progress: avgPhys.toFixed(1),
+      critical_risk_count: critical.length,
+      high_risk_count: high.length
+    },
+    critical_projects: critical.map(p => ({
+      project_id: p.project_id,
+      project_name: p.project_name,
+      district: p.district,
+      sanction_amount: p.sanction_amount,
+      expenditure: p.expenditure,
+      physical_progress: p.physical_progress,
+      financial_progress: p.financial_progress,
+      risk_score: p.risk_score,
+      risk_level: p.risk_level
+    })),
+    high_risk_projects: high.map(p => ({
+      project_id: p.project_id,
+      project_name: p.project_name,
+      district: p.district,
+      sanction_amount: p.sanction_amount,
+      expenditure: p.expenditure,
+      physical_progress: p.physical_progress,
+      financial_progress: p.financial_progress,
+      risk_score: p.risk_score,
+      risk_level: p.risk_level
+    }))
   };
 }
 
