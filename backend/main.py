@@ -9,7 +9,7 @@ from seed_data import seed_database
 from api import auth, dashboard, projects, peers, patterns, geo, investigations, reports, assistant
 
 app = FastAPI(
-    title="NIRISHAK API",
+    title="NIRIKSHAK API",
     description="MPLADS Project Monitoring & Risk Intelligence Platform API",
     version="1.0.0"
 )
@@ -44,7 +44,7 @@ def on_startup():
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "online", "system": "NIRISHAK Risk Intelligence Platform", "version": "1.0.0"}
+    return {"status": "online", "system": "NIRIKSHAK Risk Intelligence Platform", "version": "1.0.0"}
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

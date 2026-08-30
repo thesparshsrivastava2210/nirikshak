@@ -2,7 +2,7 @@ from typing import List, Dict
 
 class PatternEngine:
     """
-    Cross-Project Pattern Intelligence Engine for NIRISHAK.
+    Cross-Project Pattern Intelligence Engine for NIRIKSHAK.
     Detects recurring anomalies across implementing agencies, vendors, and geographies.
     Builds graph nodes and edges for network relationship visualization.
     """

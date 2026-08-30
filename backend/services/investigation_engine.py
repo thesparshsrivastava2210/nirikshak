@@ -2,7 +2,7 @@ from typing import List, Dict
 
 class InvestigationEngine:
     """
-    Investigation Prioritization & Workflow Engine for NIRISHAK.
+    Investigation Prioritization & Workflow Engine for NIRIKSHAK.
     Ranks risk flags using financial exposure x evidence strength x risk score,
     and generates structured AI-Assisted Investigation Briefs.
     """

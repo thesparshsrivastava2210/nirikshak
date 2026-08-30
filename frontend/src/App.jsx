@@ -13,7 +13,7 @@ import PatternIntelligence from './pages/PatternIntelligence';
 import GeoIntelligence from './pages/GeoIntelligence';
 import InvestigationCentre from './pages/InvestigationCentre';
 import ReportsPage from './pages/ReportsPage';
-import AskNirishak from './pages/AskNirishak';
+import AskNirikshak from './pages/AskNirikshak';
 
 export default function App() {
   const [searchVal, setSearchVal] = useState('');
@@ -42,7 +42,7 @@ export default function App() {
                 <Route path="/geo-intelligence" element={<GeoIntelligence />} />
                 <Route path="/investigation-centre" element={<InvestigationCentre />} />
                 <Route path="/reports" element={<ReportsPage />} />
-                <Route path="/ask-nirishak" element={<AskNirishak />} />
+                <Route path="/ask-nirikshak" element={<AskNirikshak />} />
               </Routes>
             </main>
           </div>

@@ -2,7 +2,7 @@ from typing import List, Dict
 
 class AssistantEngine:
     """
-    Ask NIRISHAK Natural Language Query Assistant.
+    Ask NIRIKSHAK Natural Language Query Assistant.
     Parses natural language governance queries into deterministic data filters,
     ranked tables, and structured risk explanations.
     """
@@ -140,7 +140,7 @@ class AssistantEngine:
         } for p in high_risk_list]
 
         return {
-            "answer_text": f"Query processed against NIRISHAK project database. Here are the top flagged records relating to your inquiry '{query}':",
+            "answer_text": f"Query processed against NIRIKSHAK project database. Here are the top flagged records relating to your inquiry '{query}':",
             "query_type": "table",
             "table_columns": ["project_id", "project_name", "district", "risk_score"],
             "table_data": rows,

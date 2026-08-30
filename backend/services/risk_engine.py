@@ -3,7 +3,7 @@ from typing import Dict, List, Tuple
 
 class RiskEngine:
     """
-    Transparent Multi-Factor Risk Intelligence Engine for NIRISHAK.
+    Transparent Multi-Factor Risk Intelligence Engine for NIRIKSHAK.
     Calculates risk score (0-100) based on six distinct quantitative dimensions:
     1. Financial-Physical Mismatch (max 25 pts)
     2. Cost Deviation vs Peer Baseline (max 20 pts)

@@ -28,7 +28,7 @@ export default function Sidebar() {
     { path: '/geo-intelligence', label: 'Geo Intelligence', icon: MapPin },
     { path: '/investigation-centre', label: 'Investigation Centre', icon: ShieldAlert },
     { path: '/reports', label: 'Reports & Export', icon: FileText },
-    { path: '/ask-nirishak', label: 'Ask NIRISHAK', icon: Bot },
+    { path: '/ask-nirikshak', label: 'Ask NIRIKSHAK', icon: Bot },
   ];
 
   return (
@@ -39,7 +39,7 @@ export default function Sidebar() {
           N
         </div>
         <div>
-          <h1 className="font-bold text-white tracking-wide text-base leading-tight">NIRISHAK</h1>
+          <h1 className="font-bold text-white tracking-wide text-base leading-tight">NIRIKSHAK</h1>
           <p className="text-[10px] text-slate-400 font-medium tracking-tight">MPLADS Risk Intelligence</p>
         </div>
       </div>

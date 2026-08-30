@@ -11,12 +11,12 @@ def login(credentials: schemas.UserLogin, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == credentials.email).first()
     if not user or user.password_hash != credentials.password:
         # Fallback for demo users
-        if credentials.email in ["ministry@nirishak.demo", "state@nirishak.demo", "district@nirishak.demo", "mp@nirishak.demo"]:
+        if credentials.email in ["ministry@nirikshak.demo", "state@nirikshak.demo", "district@nirikshak.demo", "mp@nirikshak.demo"]:
             role_map = {
-                "ministry@nirishak.demo": ("Central Nodal Officer", "Ministry", "All India", "National"),
-                "state@nirishak.demo": ("State Director UP", "State Authority", "Uttar Pradesh", "State HQ"),
-                "district@nirishak.demo": ("District Magistrate", "District Authority", "Uttar Pradesh", "Varanasi"),
-                "mp@nirishak.demo": ("MP Office Varanasi", "MP / Constituency", "Uttar Pradesh", "Varanasi")
+                "ministry@nirikshak.demo": ("Central Nodal Officer", "Ministry", "All India", "National"),
+                "state@nirikshak.demo": ("State Director UP", "State Authority", "Uttar Pradesh", "State HQ"),
+                "district@nirikshak.demo": ("District Magistrate", "District Authority", "Uttar Pradesh", "Varanasi"),
+                "mp@nirikshak.demo": ("MP Office Varanasi", "MP / Constituency", "Uttar Pradesh", "Varanasi")
             }
             name, role, state, district = role_map[credentials.email]
             demo_user = models.User(

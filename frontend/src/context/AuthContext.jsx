@@ -5,7 +5,7 @@ const AuthContext = createContext();
 export const DEMO_ACCOUNTS = [
   {
     name: "Central Nodal Officer",
-    email: "ministry@nirishak.demo",
+    email: "ministry@nirikshak.demo",
     role: "Ministry",
     state: "All India",
     district: "National Center",
@@ -14,7 +14,7 @@ export const DEMO_ACCOUNTS = [
   },
   {
     name: "State Project Director (UP)",
-    email: "state@nirishak.demo",
+    email: "state@nirikshak.demo",
     role: "State Authority",
     state: "Uttar Pradesh",
     district: "State HQ",
@@ -23,7 +23,7 @@ export const DEMO_ACCOUNTS = [
   },
   {
     name: "District Magistrate / Nodal",
-    email: "district@nirishak.demo",
+    email: "district@nirikshak.demo",
     role: "District Authority",
     state: "Uttar Pradesh",
     district: "Varanasi",
@@ -32,7 +32,7 @@ export const DEMO_ACCOUNTS = [
   },
   {
     name: "MP Office Varanasi",
-    email: "mp@nirishak.demo",
+    email: "mp@nirikshak.demo",
     role: "MP / Constituency",
     state: "Uttar Pradesh",
     district: "Varanasi",

@@ -95,7 +95,7 @@ export async function fetchReportSummary(state = "All", district = "All", risk_l
   return res.json();
 }
 
-export async function askNirishakAssistant(query) {
+export async function askNirikshakAssistant(query) {
   const res = await fetch(`${API_BASE}/assistant/query`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

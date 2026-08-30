@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { askNirishakAssistant } from '../services/api';
+import { askNirikshakAssistant } from '../services/api';
 import { Bot, Send, Sparkles, ChevronRight, CornerDownLeft, Table as TableIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-export default function AskNirishak() {
+export default function AskNirikshak() {
   const [query, setQuery] = useState('');
   const [response, setResponse] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -24,7 +24,7 @@ export default function AskNirishak() {
     setQuery(qToUse);
 
     try {
-      const res = await askNirishakAssistant(qToUse);
+      const res = await askNirikshakAssistant(qToUse);
       setResponse(res);
     } catch (err) {
       console.error('Error querying assistant:', err);
@@ -39,7 +39,7 @@ export default function AskNirishak() {
       <div className="border-b border-slate-200 pb-4">
         <h1 className="text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
           <Bot className="w-5 h-5 text-slate-800" />
-          Ask NIRISHAK — Natural Language Query Assistant
+          Ask NIRIKSHAK — Natural Language Query Assistant
         </h1>
         <p className="text-xs text-slate-500 mt-0.5 font-medium">
           Query project metrics, financial anomalies, and risk queue priorities using natural language
@@ -89,7 +89,7 @@ export default function AskNirishak() {
       {/* Assistant Response Box */}
       {loading && (
         <div className="bg-white rounded-lg border border-slate-200 p-8 text-center text-slate-500 text-xs font-medium animate-pulse">
-          Querying NIRISHAK Risk Database...
+          Querying NIRIKSHAK Risk Database...
         </div>
       )}
 
@@ -97,7 +97,7 @@ export default function AskNirishak() {
         <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm space-y-4">
           <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
             <Sparkles className="w-4 h-4 text-emerald-600" />
-            <span className="text-xs font-bold text-slate-900 uppercase">NIRISHAK Assistant Response</span>
+            <span className="text-xs font-bold text-slate-900 uppercase">NIRIKSHAK Assistant Response</span>
           </div>
 
           <p className="text-xs text-slate-800 font-medium leading-relaxed">{response.answer_text}</p>

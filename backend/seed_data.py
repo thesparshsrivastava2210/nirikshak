@@ -19,7 +19,7 @@ def seed_database():
         users = [
             models.User(
                 name="Central Nodal Officer",
-                email="ministry@nirishak.demo",
+                email="ministry@nirikshak.demo",
                 password_hash="demo123",
                 role="Ministry",
                 state="All India",
@@ -28,7 +28,7 @@ def seed_database():
             ),
             models.User(
                 name="State Project Director (UP)",
-                email="state@nirishak.demo",
+                email="state@nirikshak.demo",
                 password_hash="demo123",
                 role="State Authority",
                 state="Uttar Pradesh",
@@ -37,7 +37,7 @@ def seed_database():
             ),
             models.User(
                 name="District Magistrate / Nodal",
-                email="district@nirishak.demo",
+                email="district@nirikshak.demo",
                 password_hash="demo123",
                 role="District Authority",
                 state="Uttar Pradesh",
@@ -46,7 +46,7 @@ def seed_database():
             ),
             models.User(
                 name="Member of Parliament Office",
-                email="mp@nirishak.demo",
+                email="mp@nirikshak.demo",
                 password_hash="demo123",
                 role="MP / Constituency",
                 state="Uttar Pradesh",

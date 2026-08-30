@@ -3,7 +3,7 @@ from typing import List, Dict
 
 class GeoEngine:
     """
-    Spatial & Overlap Intelligence Engine for NIRISHAK.
+    Spatial & Overlap Intelligence Engine for NIRIKSHAK.
     Calculates geographic distance using Haversine formula and computes text similarity 
     between project titles and descriptions to identify potential work overlaps.
     """

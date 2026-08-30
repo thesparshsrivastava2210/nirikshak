@@ -8,7 +8,7 @@ from services.assistant_engine import AssistantEngine
 router = APIRouter(prefix="/api/assistant", tags=["assistant"])
 
 @router.post("/query")
-def ask_nirishak(req: schemas.AssistantQueryRequest, db: Session = Depends(get_db)):
+def ask_nirikshak(req: schemas.AssistantQueryRequest, db: Session = Depends(get_db)):
     projects = db.query(models.Project).all()
     agencies = db.query(models.Agency).all()
     investigations = db.query(models.Investigation).all()
