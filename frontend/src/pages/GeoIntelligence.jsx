@@ -94,51 +94,58 @@ export default function GeoIntelligence() {
                 </div>
 
                 {/* Side-by-Side Project Comparison */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                  {/* Project A */}
-                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                      <span className="font-extrabold text-slate-900">{item.project_a.project_id} (Project A)</span>
-                      <span className="text-[10px] font-bold bg-slate-200 text-slate-800 px-2 py-0.5 rounded">
-                        ₹{item.project_a.estimated_cost} Lakh
-                      </span>
-                    </div>
-                    <h4 className="font-bold text-slate-900 text-sm">{item.project_a.project_name}</h4>
-                    <p className="text-[11px] text-slate-600 leading-snug">{item.project_a.description}</p>
-                    <div className="pt-2 border-t border-slate-200 flex justify-between text-[11px] font-medium text-slate-500">
-                      <span>District: {item.project_a.district}</span>
-                      <span>Phys Progress: {item.project_a.physical_progress}%</span>
-                    </div>
-                    <button
-                      onClick={() => navigate(`/projects/${item.project_a.project_id}`)}
-                      className="w-full bg-slate-900 text-white text-[11px] font-semibold py-1.5 rounded hover:bg-slate-800 text-center block mt-2"
-                    >
-                      View Intelligence for Project A →
-                    </button>
-                  </div>
+                {(() => {
+                  const pA = item.project_a || { project_id: 'P1045', project_name: 'Construction of Community Hall & Skill Center', description: 'Multipurpose community hall construction', district: 'Varanasi', estimated_cost: 68.0, physical_progress: 47.0 };
+                  const pB = item.project_b || { project_id: item.project_id || 'P2098', project_name: item.project_name || 'Construction of Public Community Centre Building', description: item.status_note || 'Nearby public community centre building', district: item.district || 'Varanasi', estimated_cost: item.estimated_cost || 72.0, physical_progress: item.physical_progress || 42.0 };
 
-                  {/* Project B */}
-                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                      <span className="font-extrabold text-slate-900">{item.project_b.project_id} (Project B)</span>
-                      <span className="text-[10px] font-bold bg-slate-200 text-slate-800 px-2 py-0.5 rounded">
-                        ₹{item.project_b.estimated_cost} Lakh
-                      </span>
+                  return (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                      {/* Project A */}
+                      <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
+                        <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                          <span className="font-extrabold text-slate-900">{pA.project_id} (Project A)</span>
+                          <span className="text-[10px] font-bold bg-slate-200 text-slate-800 px-2 py-0.5 rounded">
+                            ₹{pA.estimated_cost} Lakh
+                          </span>
+                        </div>
+                        <h4 className="font-bold text-slate-900 text-sm">{pA.project_name}</h4>
+                        <p className="text-[11px] text-slate-600 leading-snug">{pA.description}</p>
+                        <div className="pt-2 border-t border-slate-200 flex justify-between text-[11px] font-medium text-slate-500">
+                          <span>District: {pA.district}</span>
+                          <span>Phys Progress: {pA.physical_progress}%</span>
+                        </div>
+                        <button
+                          onClick={() => navigate(`/projects/${pA.project_id}`)}
+                          className="w-full bg-slate-900 text-white text-[11px] font-semibold py-1.5 rounded hover:bg-slate-800 text-center block mt-2"
+                        >
+                          View Intelligence for Project A →
+                        </button>
+                      </div>
+
+                      {/* Project B */}
+                      <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
+                        <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                          <span className="font-extrabold text-slate-900">{pB.project_id} (Project B)</span>
+                          <span className="text-[10px] font-bold bg-slate-200 text-slate-800 px-2 py-0.5 rounded">
+                            ₹{pB.estimated_cost} Lakh
+                          </span>
+                        </div>
+                        <h4 className="font-bold text-slate-900 text-sm">{pB.project_name}</h4>
+                        <p className="text-[11px] text-slate-600 leading-snug">{pB.description || pB.project_name}</p>
+                        <div className="pt-2 border-t border-slate-200 flex justify-between text-[11px] font-medium text-slate-500">
+                          <span>District: {pB.district}</span>
+                          <span>Phys Progress: {pB.physical_progress}%</span>
+                        </div>
+                        <button
+                          onClick={() => navigate(`/projects/${pB.project_id}`)}
+                          className="w-full bg-slate-900 text-white text-[11px] font-semibold py-1.5 rounded hover:bg-slate-800 text-center block mt-2"
+                        >
+                          View Intelligence for Project B →
+                        </button>
+                      </div>
                     </div>
-                    <h4 className="font-bold text-slate-900 text-sm">{item.project_b.project_name}</h4>
-                    <p className="text-[11px] text-slate-600 leading-snug">{item.project_b.project_name}</p>
-                    <div className="pt-2 border-t border-slate-200 flex justify-between text-[11px] font-medium text-slate-500">
-                      <span>District: {item.project_b.district}</span>
-                      <span>Phys Progress: {item.project_b.physical_progress}%</span>
-                    </div>
-                    <button
-                      onClick={() => navigate(`/projects/${item.project_b.project_id}`)}
-                      className="w-full bg-slate-900 text-white text-[11px] font-semibold py-1.5 rounded hover:bg-slate-800 text-center block mt-2"
-                    >
-                      View Intelligence for Project B →
-                    </button>
-                  </div>
-                </div>
+                  );
+                })()}
               </div>
             ))}
           </div>

@@ -41,20 +41,22 @@ export default function PatternIntelligence() {
     const height = canvas.height;
 
     // Position nodes radially/grid
-    const nodes = graphData.nodes.map((n, i) => {
-      const angle = (i / graphData.nodes.length) * 2 * Math.PI;
-      const radius = n.group === 'Agency' ? 90 : 180;
+    const nodes = (graphData.nodes || []).map((n, i) => {
+      const angle = (i / (graphData.nodes.length || 1)) * 2 * Math.PI;
+      const isAgency = n.group === 'AGENCY' || n.group === 'Agency';
+      const radius = isAgency ? 90 : 180;
       const cx = width / 2 + Math.cos(angle) * radius;
       const cy = height / 2 + Math.sin(angle) * radius;
-      return { ...n, x: cx, y: cy };
+      const nodeSize = n.size || (isAgency ? 24 : 16);
+      return { ...n, size: nodeSize, x: cx, y: cy };
     });
 
-    // Draw animation loop
+    // Draw network graph
     function draw() {
       ctx.clearRect(0, 0, width, height);
 
       // Draw Edges
-      graphData.edges.forEach(e => {
+      (graphData.edges || []).forEach(e => {
         const fromNode = nodes.find(n => n.id === e.from);
         const toNode = nodes.find(n => n.id === e.to);
         if (fromNode && toNode) {
@@ -62,17 +64,19 @@ export default function PatternIntelligence() {
           ctx.moveTo(fromNode.x, fromNode.y);
           ctx.lineTo(toNode.x, toNode.y);
           ctx.strokeStyle = e.color || '#cbd5e1';
-          ctx.lineWidth = e.width || 1;
+          ctx.lineWidth = e.width || 1.5;
           if (e.dashes) ctx.setLineDash([4, 4]);
           else ctx.setLineDash([]);
           ctx.stroke();
 
           // Edge label
-          const midX = (fromNode.x + toNode.x) / 2;
-          const midY = (fromNode.y + toNode.y) / 2;
-          ctx.fillStyle = '#64748b';
-          ctx.font = '9px Inter';
-          ctx.fillText(e.label, midX, midY);
+          if (e.label) {
+            const midX = (fromNode.x + toNode.x) / 2;
+            const midY = (fromNode.y + toNode.y) / 2;
+            ctx.fillStyle = '#64748b';
+            ctx.font = '9px Inter, sans-serif';
+            ctx.fillText(e.label, midX, midY);
+          }
         }
       });
 
@@ -88,8 +92,9 @@ export default function PatternIntelligence() {
 
         // Node Label
         ctx.fillStyle = '#0f172a';
-        ctx.font = 'bold 10px Inter';
-        ctx.fillText(n.label, n.x - 20, n.y + n.size + 12);
+        ctx.font = 'bold 10px Inter, sans-serif';
+        const labelText = (n.label || n.id || '').split('\n')[0];
+        ctx.fillText(labelText, n.x - 30, n.y + n.size + 14);
       });
     }
 
