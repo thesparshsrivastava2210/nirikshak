@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "frontend/api/**/*.py": {
+      "includeFiles": "frontend/backend/**"
+    }
+  }
+}
