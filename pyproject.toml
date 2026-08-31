@@ -5,11 +5,13 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "nirikshak"
 version = "0.1.0"
+requires-python = ">=3.12"
 dependencies = [
-    "fastapi",
-    "uvicorn",
-    "sqlalchemy",
-    "pydantic"
+    "fastapi==0.115.6",
+    "uvicorn==0.32.1",
+    "sqlalchemy==2.0.36",
+    "pydantic==2.10.3",
+    "python-multipart==0.0.20"
 ]
 
 [tool.vercel]

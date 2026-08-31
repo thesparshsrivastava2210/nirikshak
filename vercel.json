@@ -3,14 +3,11 @@
   "outputDirectory": "frontend/.next",
   "framework": "nextjs",
   "functions": {
-    "api/**/*.py": {
-      "includeFiles": "backend/**"
-    },
-    "frontend/api/**/*.py": {
+    "api/[...catchall].py": {
       "includeFiles": "backend/**"
     }
   },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index.py" }
+    { "source": "/api/(.*)", "destination": "/api/[...catchall].py" }
   ]
 }
