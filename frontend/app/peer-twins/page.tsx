@@ -9,7 +9,7 @@ function roundDelta(val: number) {
   return Math.round(val * 10) / 10;
 }
 
-export default function PeerTwins() {
+function PeerTwinsContent() {
   const searchParams = useSearchParams();
   const projectParam = searchParams.get("project") || "P1045";
 
@@ -268,5 +268,13 @@ export default function PeerTwins() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PeerTwins() {
+  return (
+    <React.Suspense fallback={<div className="p-8 text-center text-slate-500 font-medium animate-pulse">Loading Peer Intelligence...</div>}>
+      <PeerTwinsContent />
+    </React.Suspense>
   );
 }
