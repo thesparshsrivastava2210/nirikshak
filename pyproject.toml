@@ -13,4 +13,4 @@ dependencies = [
 ]
 
 [tool.vercel]
-entrypoint = "frontend/api/[...catchall].py"
+entrypoint = "api/index.py"
