@@ -2,11 +2,17 @@
 
 import React, { useState } from "react";
 import { askNirikshakAssistant } from "@/lib/api";
+import { chatbotQuerySchema, type ChatbotQueryFormValues } from "@/schemas/assistant";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { motion } from "motion/react";
 import { Bot, Send, Sparkles, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function AskNirikshak() {
-  const [query, setQuery] = useState("");
   const [response, setResponse] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
@@ -19,20 +25,31 @@ export default function AskNirikshak() {
     "Which agency has the highest number of risk flags?",
   ];
 
-  const handleSearch = async (queryText?: string) => {
-    const qToUse = queryText || query;
-    if (!qToUse.trim()) return;
-    setLoading(true);
-    setQuery(qToUse);
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<ChatbotQueryFormValues>({
+    resolver: zodResolver(chatbotQuerySchema),
+    defaultValues: { query: "" },
+  });
 
+  const onSubmit = async (data: ChatbotQueryFormValues) => {
+    setLoading(true);
     try {
-      const res = await askNirikshakAssistant(qToUse);
+      const res = await askNirikshakAssistant(data.query);
       setResponse(res);
     } catch (err) {
       console.error("Error querying assistant:", err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleChipClick = (chipText: string) => {
+    setValue("query", chipText);
+    onSubmit({ query: chipText });
   };
 
   return (
@@ -50,28 +67,28 @@ export default function AskNirikshak() {
 
       {/* Query Search Bar */}
       <div className="bg-white p-5 rounded-lg border border-slate-200 shadow-sm space-y-3">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSearch();
-          }}
-          className="flex items-center gap-2"
-        >
-          <div className="relative flex-1">
-            <input
-              type="text"
-              placeholder="Ask a question (e.g. 'Which projects should I inspect first?')..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-300 rounded-md px-4 py-3 text-xs text-slate-900 focus:outline-none focus:border-slate-500 font-medium placeholder-slate-400 pr-10"
-            />
-            <button
-              type="submit"
-              className="absolute right-2 top-2 p-1.5 bg-slate-900 text-white rounded hover:bg-slate-800 cursor-pointer"
-            >
-              <Send className="w-3.5 h-3.5" />
-            </button>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-1">
+          <div className="relative flex items-center gap-2">
+            <div className="relative flex-1">
+              <Input
+                type="text"
+                placeholder="Ask a question (e.g. 'Which projects should I inspect first?')..."
+                {...register("query")}
+                className="py-3 pr-10"
+              />
+              <Button
+                type="submit"
+                size="icon"
+                disabled={loading}
+                className="absolute right-1.5 top-1.5 h-7 w-7"
+              >
+                <Send className="w-3.5 h-3.5" />
+              </Button>
+            </div>
           </div>
+          {errors.query && (
+            <p className="text-[11px] text-red-600 font-semibold">{errors.query.message}</p>
+          )}
         </form>
 
         {/* Prompt Chips */}
@@ -81,13 +98,16 @@ export default function AskNirikshak() {
           </span>
           <div className="flex flex-wrap gap-2">
             {promptChips.map((chip, idx) => (
-              <button
+              <Button
                 key={idx}
-                onClick={() => handleSearch(chip)}
-                className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold px-3 py-1 rounded border border-slate-200 transition text-left cursor-pointer"
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => handleChipClick(chip)}
+                className="text-[11px] font-semibold text-left h-auto py-1 px-3"
               >
                 &quot;{chip}&quot;
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -95,13 +115,23 @@ export default function AskNirikshak() {
 
       {/* Assistant Response Box */}
       {loading && (
-        <div className="bg-white rounded-lg border border-slate-200 p-8 text-center text-slate-500 text-xs font-medium animate-pulse">
-          Querying NIRIKSHAK Risk Database...
+        <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-3">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-4 w-4 rounded-full" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-32 w-full" />
         </div>
       )}
 
       {response && !loading && (
-        <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm space-y-4">
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+          className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm space-y-4"
+        >
           <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
             <Sparkles className="w-4 h-4 text-emerald-600" />
             <span className="text-xs font-bold text-slate-900 uppercase">
@@ -140,14 +170,16 @@ export default function AskNirikshak() {
                       ))}
                       <td className="py-2.5 px-3 text-right">
                         {row.project_id && (
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() =>
                               router.push(`/projects/${row.project_id}`)
                             }
-                            className="text-slate-900 hover:underline font-bold text-[11px] inline-flex items-center gap-0.5 cursor-pointer"
+                            className="font-bold text-[11px]"
                           >
-                            Inspect <ChevronRight className="w-3.5 h-3.5" />
-                          </button>
+                            Inspect <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
+                          </Button>
                         )}
                       </td>
                     </tr>
@@ -186,7 +218,7 @@ export default function AskNirikshak() {
                 {response.suggested_followups.map((f: string, i: number) => (
                   <button
                     key={i}
-                    onClick={() => handleSearch(f)}
+                    onClick={() => handleChipClick(f)}
                     className="text-slate-600 hover:text-slate-900 text-[11px] font-semibold underline cursor-pointer"
                   >
                     • {f}
@@ -195,7 +227,7 @@ export default function AskNirikshak() {
               </div>
             </div>
           )}
-        </div>
+        </motion.div>
       )}
     </div>
   );

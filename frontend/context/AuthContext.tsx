@@ -1,16 +1,10 @@
 "use client";
 
-import React, { createContext, useContext, useState, type ReactNode } from "react";
+import React, { createContext, useContext, type ReactNode } from "react";
+import { useAuthStore, DEMO_ACCOUNTS, type DemoAccount } from "@/store/auth-store";
 
-export interface DemoAccount {
-  name: string;
-  email: string;
-  role: string;
-  state: string;
-  district: string;
-  constituency: string;
-  badgeColor: string;
-}
+export type { DemoAccount };
+export { DEMO_ACCOUNTS };
 
 interface AuthContextType {
   currentUser: DemoAccount;
@@ -20,52 +14,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export const DEMO_ACCOUNTS: DemoAccount[] = [
-  {
-    name: "Central Nodal Officer",
-    email: "ministry@nirikshak.demo",
-    role: "Ministry",
-    state: "All India",
-    district: "National Center",
-    constituency: "National",
-    badgeColor: "bg-purple-100 text-purple-800 border-purple-200",
-  },
-  {
-    name: "State Project Director (UP)",
-    email: "state@nirikshak.demo",
-    role: "State Authority",
-    state: "Uttar Pradesh",
-    district: "State HQ",
-    constituency: "State Wide",
-    badgeColor: "bg-blue-100 text-blue-800 border-blue-200",
-  },
-  {
-    name: "District Magistrate / Nodal",
-    email: "district@nirikshak.demo",
-    role: "District Authority",
-    state: "Uttar Pradesh",
-    district: "Varanasi",
-    constituency: "Varanasi Parliamentary",
-    badgeColor: "bg-amber-100 text-amber-800 border-amber-200",
-  },
-  {
-    name: "MP Office Varanasi",
-    email: "mp@nirikshak.demo",
-    role: "MP / Constituency",
-    state: "Uttar Pradesh",
-    district: "Varanasi",
-    constituency: "Varanasi",
-    badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  },
-];
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [currentUser, setCurrentUser] = useState<DemoAccount>(DEMO_ACCOUNTS[2]);
-
-  const switchUser = (email: string) => {
-    const found = DEMO_ACCOUNTS.find((a) => a.email === email);
-    if (found) setCurrentUser(found);
-  };
+  const currentUser = useAuthStore((s) => s.currentUser);
+  const switchUser = useAuthStore((s) => s.switchUser);
 
   return (
     <AuthContext.Provider value={{ currentUser, switchUser, DEMO_ACCOUNTS }}>
@@ -76,6 +27,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  if (!ctx) {
+    // Graceful fallback to store directly if used outside provider
+    const store = useAuthStore.getState();
+    return {
+      currentUser: store.currentUser,
+      switchUser: store.switchUser,
+      DEMO_ACCOUNTS,
+    };
+  }
   return ctx;
 }

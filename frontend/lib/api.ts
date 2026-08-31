@@ -82,7 +82,16 @@ export async function fetchDashboardStats() {
 }
 
 // ── Projects ─────────────────────────────────────────────────────────────
-export async function fetchProjects(filters: Record<string, string> = {}) {
+// ── ProjectFilters type ─────────────────────────────────────────────────
+export interface ProjectFilters {
+  state?: string;
+  district?: string;
+  risk_level?: string;
+  project_type?: string;
+  search?: string;
+}
+
+export async function fetchProjects(filters: ProjectFilters = {}) {
   try {
     const query = new URLSearchParams();
     if (filters.state && filters.state !== "All") query.append("state", filters.state);
@@ -443,3 +452,8 @@ export async function askNirikshakAssistant(query: string) {
     suggested_followups: ["Which projects should I inspect first?", "Why is P1045 high risk?", "Which agency has the highest number of risk flags?"]
   };
 }
+
+// ── Exported aliases for hook convenience ──────────────────────────────────
+export const fetchProjectDetail = fetchProjectIntelligence;
+export const fetchPeerComparison = fetchPeerTwins;
+

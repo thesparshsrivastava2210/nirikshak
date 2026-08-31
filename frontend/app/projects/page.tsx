@@ -1,22 +1,30 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { fetchProjects } from "@/lib/api";
+import { useProjects } from "@/hooks/use-queries";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge, getRiskVariant } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Search, ArrowUpDown, ChevronRight, Download } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function ProjectsList() {
   return (
-    <React.Suspense fallback={<div className="p-12 text-center text-slate-500 text-xs font-medium animate-pulse">Loading MPLADS projects registry...</div>}>
+    <React.Suspense
+      fallback={
+        <div className="p-12 space-y-4 max-w-7xl mx-auto">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      }
+    >
       <ProjectsListContent />
     </React.Suspense>
   );
 }
 
 function ProjectsListContent() {
-  const [projects, setProjects] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
   const searchParams = useSearchParams();
   const searchFromUrl = searchParams.get("search") || "";
 
@@ -26,7 +34,7 @@ function ProjectsListContent() {
   const [riskFilter, setRiskFilter] = useState("All");
 
   const [sortField, setSortField] = useState("risk_score");
-  const [sortOrder, setSortOrder] = useState("desc");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   const router = useRouter();
 
@@ -36,25 +44,13 @@ function ProjectsListContent() {
     }
   }, [searchFromUrl]);
 
-  useEffect(() => {
-    async function loadData() {
-      setLoading(true);
-      try {
-        const data = await fetchProjects({
-          state: stateFilter,
-          district: districtFilter,
-          risk_level: riskFilter,
-          search: search,
-        });
-        setProjects(data);
-      } catch (err) {
-        console.error("Error loading projects list:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
-  }, [search, stateFilter, districtFilter, riskFilter]);
+  // TanStack Query handles fetching, caching, loading, and error states automatically
+  const { data: projects = [], isLoading } = useProjects({
+    state: stateFilter,
+    district: districtFilter,
+    risk_level: riskFilter,
+    search: search,
+  });
 
   const handleSort = (field: string) => {
     if (sortField === field) {
@@ -65,7 +61,7 @@ function ProjectsListContent() {
     }
   };
 
-  const sortedProjects = [...projects].sort((a, b) => {
+  const sortedProjects = [...projects].sort((a: any, b: any) => {
     let valA = a[sortField];
     let valB = b[sortField];
     if (typeof valA === "string") valA = valA.toLowerCase();
@@ -89,7 +85,9 @@ function ProjectsListContent() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => {
               if (!sortedProjects.length) return;
               const headers = [
@@ -106,7 +104,7 @@ function ProjectsListContent() {
                 "Risk Level",
                 "Agency Name",
               ];
-              const rows = sortedProjects.map((p) => [
+              const rows = sortedProjects.map((p: any) => [
                 `"${p.project_id}"`,
                 `"${p.project_name.replace(/"/g, '""')}"`,
                 `"${p.project_type}"`,
@@ -134,19 +132,18 @@ function ProjectsListContent() {
               link.click();
               document.body.removeChild(link);
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded text-xs font-semibold border border-slate-300 transition cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export CSV Data</span>
-          </button>
-          
-          <button
+          </Button>
+
+          <Button
+            size="sm"
             onClick={() => window.print()}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-semibold shadow-sm transition cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Print Registry</span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -155,13 +152,13 @@ function ProjectsListContent() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
           {/* Search Input */}
           <div className="relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-            <input
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 z-10 pointer-events-none" />
+            <Input
               type="text"
               placeholder="Search Project ID, Name..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-300 rounded-md pl-9 pr-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-slate-500 font-medium placeholder-slate-400"
+              className="pl-9"
             />
           </div>
 
@@ -219,26 +216,31 @@ function ProjectsListContent() {
             stateFilter !== "All" ||
             districtFilter !== "All" ||
             riskFilter !== "All") && (
-            <button
+            <Button
+              variant="link"
+              size="sm"
               onClick={() => {
                 setSearch("");
                 setStateFilter("All");
                 setDistrictFilter("All");
                 setRiskFilter("All");
               }}
-              className="text-slate-600 hover:text-slate-900 underline text-xs font-semibold cursor-pointer"
+              className="text-slate-600 hover:text-slate-900 p-0"
             >
               Reset Filters
-            </button>
+            </Button>
           )}
         </div>
       </div>
 
       {/* Projects Table Container */}
       <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-        {loading ? (
-          <div className="p-12 text-center text-slate-500 text-xs font-medium animate-pulse">
-            Loading MPLADS projects registry...
+        {isLoading ? (
+          <div className="p-8 space-y-3">
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-full" />
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -313,100 +315,86 @@ function ProjectsListContent() {
               </thead>
 
               <tbody className="divide-y divide-slate-200 text-xs">
-                {sortedProjects.map((p) => {
-                  const isCritical = p.risk_level === "CRITICAL";
-                  const isHigh = p.risk_level === "HIGH";
-                  const isMedium = p.risk_level === "MEDIUM";
+                {sortedProjects.map((p: any) => (
+                  <tr
+                    key={p.id || p.project_id}
+                    onClick={() => router.push(`/projects/${p.project_id}`)}
+                    className="hover:bg-slate-50 transition cursor-pointer group"
+                  >
+                    <td className="py-3 px-4 font-bold text-slate-900 font-mono">
+                      {p.project_id}
+                    </td>
 
-                  return (
-                    <tr
-                      key={p.id || p.project_id}
-                      onClick={() => router.push(`/projects/${p.project_id}`)}
-                      className="hover:bg-slate-50 transition cursor-pointer group"
-                    >
-                      <td className="py-3 px-4 font-bold text-slate-900 font-mono">
-                        {p.project_id}
-                      </td>
+                    <td className="py-3 px-4 font-semibold text-slate-900 max-w-xs">
+                      <p className="truncate text-slate-900 group-hover:text-emerald-700">
+                        {p.project_name}
+                      </p>
+                      <p className="text-[10px] text-slate-500 font-normal truncate mt-0.5">
+                        {p.agency_name}
+                      </p>
+                    </td>
 
-                      <td className="py-3 px-4 font-semibold text-slate-900 max-w-xs">
-                        <p className="truncate text-slate-900 group-hover:text-emerald-700">
-                          {p.project_name}
-                        </p>
-                        <p className="text-[10px] text-slate-500 font-normal truncate mt-0.5">
-                          {p.agency_name}
-                        </p>
-                      </td>
+                    <td className="py-3 px-4 text-slate-700 font-medium">
+                      {p.district}, {p.state}
+                      <span className="block text-[10px] text-slate-400">
+                        {p.village}
+                      </span>
+                    </td>
 
-                      <td className="py-3 px-4 text-slate-700 font-medium">
-                        {p.district}, {p.state}
-                        <span className="block text-[10px] text-slate-400">
-                          {p.village}
+                    <td className="py-3 px-4 text-slate-900 font-bold text-right">
+                      ₹{p.sanction_amount} Lakh
+                    </td>
+
+                    <td className="py-3 px-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <span className="font-semibold text-slate-800">
+                          {p.physical_progress}%
                         </span>
-                      </td>
-
-                      <td className="py-3 px-4 text-slate-900 font-bold text-right">
-                        ₹{p.sanction_amount} Lakh
-                      </td>
-
-                      <td className="py-3 px-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <span className="font-semibold text-slate-800">
-                            {p.physical_progress}%
-                          </span>
-                          <div className="w-12 bg-slate-200 h-1.5 rounded-full overflow-hidden hidden sm:block">
-                            <div
-                              className="bg-emerald-600 h-full rounded-full"
-                              style={{ width: `${p.physical_progress}%` }}
-                            />
-                          </div>
+                        <div className="w-12 bg-slate-200 h-1.5 rounded-full overflow-hidden hidden sm:block">
+                          <div
+                            className="bg-emerald-600 h-full rounded-full"
+                            style={{ width: `${p.physical_progress}%` }}
+                          />
                         </div>
-                      </td>
+                      </div>
+                    </td>
 
-                      <td className="py-3 px-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <span className="font-semibold text-slate-800">
-                            {p.financial_progress}%
-                          </span>
-                          <div className="w-12 bg-slate-200 h-1.5 rounded-full overflow-hidden hidden sm:block">
-                            <div
-                              className="bg-blue-600 h-full rounded-full"
-                              style={{ width: `${p.financial_progress}%` }}
-                            />
-                          </div>
-                        </div>
-                      </td>
-
-                      <td className="py-3 px-4 text-center">
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold ${
-                            isCritical
-                              ? "bg-red-100 text-red-700 border border-red-200"
-                              : isHigh
-                              ? "bg-amber-100 text-amber-800 border border-amber-200"
-                              : isMedium
-                              ? "bg-yellow-100 text-yellow-800 border border-yellow-200"
-                              : "bg-emerald-100 text-emerald-800 border border-emerald-200"
-                          }`}
-                        >
-                          {p.risk_score} / 100
+                    <td className="py-3 px-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <span className="font-semibold text-slate-800">
+                          {p.financial_progress}%
                         </span>
-                      </td>
+                        <div className="w-12 bg-slate-200 h-1.5 rounded-full overflow-hidden hidden sm:block">
+                          <div
+                            className="bg-blue-600 h-full rounded-full"
+                            style={{ width: `${p.financial_progress}%` }}
+                          />
+                        </div>
+                      </div>
+                    </td>
 
-                      <td className="py-3 px-4 text-right">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            router.push(`/projects/${p.project_id}`);
-                          }}
-                          className="inline-flex items-center gap-1 text-slate-900 hover:text-slate-700 font-bold text-xs cursor-pointer"
-                        >
-                          <span>Inspect</span>
-                          <ChevronRight className="w-3.5 h-3.5" />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
+                    <td className="py-3 px-4 text-center">
+                      <Badge variant={getRiskVariant(p.risk_level)}>
+                        {p.risk_score} / 100
+                      </Badge>
+                    </td>
+
+                    <td className="py-3 px-4 text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/projects/${p.project_id}`);
+                        }}
+                        className="font-bold text-xs"
+                      >
+                        <span>Inspect</span>
+                        <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
 
                 {sortedProjects.length === 0 && (
                   <tr>

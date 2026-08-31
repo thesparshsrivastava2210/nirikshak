@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+import { ReactQueryProvider } from "@/lib/query-client";
 import AppShell from "@/components/layout/AppShell";
 
 const inter = Inter({
@@ -31,9 +32,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body className="bg-slate-50 text-slate-900 antialiased selection:bg-slate-800 selection:text-white font-sans">
-        <AuthProvider>
-          <AppShell>{children}</AppShell>
-        </AuthProvider>
+        <ReactQueryProvider>
+          <AuthProvider>
+            <AppShell>{children}</AppShell>
+          </AuthProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   );
